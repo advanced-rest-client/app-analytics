@@ -23,7 +23,40 @@ the License.
    * @polymerBehavior
    */
   ArcBehaviors.AppAnalyticsBehavior = {
+    /**
+     * Fired when `debugEndpoint` is set to `true`. Contains a validation
+     * result from the GA server.
+     * The result is in following format:
+     * ```javascript
+     * {
+     *   "hitParsingResult": [{
+     *     "valid": false,
+     *     "hit": "GET /debug/collect?tid=fake\u0026v=1 HTTP/1.1",
+     *     "parserMessage": [{
+     *       "messageType": "ERROR",
+     *       "description": "The value provided for parameter ...",
+     *       "parameter": "tid"
+     *     }, {
+     *       "messageType": "ERROR",
+     *       "description": "Tracking Id is a required field ...",
+     *       "parameter": "tid"
+     *     }]
+     *   }]
+     * }
+     * ```
+     *
+     * @event app-analytics-structure-debug
+     * @param {Object} debug A validation result from the GA server.
+     */
     properties: {
+      /**
+       * If set then the tracking will be disabled any all calls will be
+       * void.
+       */
+      disableTracking: {
+        type: Boolean,
+        value: false
+      },
       /**
        * The Client ID for the mearusement protocol.
        *
@@ -253,28 +286,105 @@ the License.
       /**
        * If set to true it will prints debug messages into the console.
        */
-      debug: Boolean
+      debug: Boolean,
+      /**
+       * If set it will send the data to GA's debug endpoint
+       * and the request won't be actually saved but only validated
+       * and the validation results will be fired in the
+       * `aapp-analytics-structure-debug`
+       * event in the detail's `debug` property.
+       */
+      debugEndpoint: Boolean,
+
+      _paramsMap: {
+        type: Object,
+        readOnly: true,
+        value: function() {
+          var data = {
+            v: 'Protocol Version',
+            tid: 'Tracking ID / Web Property ID',
+            aip: 'Anonymize IP',
+            ds: 'Data Source',
+            qt: 'Queue Time',
+            z: 'Cache Buster',
+            cid: 'Client ID',
+            uid: 'User ID',
+            sc: 'Session Control',
+            uip: 'IP Override',
+            ua: 'User Agent Override',
+            geoip: 'Geographical Override',
+            dr: 'Document Referrer',
+            cn: 'Campaign Name',
+            cs: 'Campaign Source',
+            cm: 'Campaign Medium',
+            ck: 'Campaign Keyword',
+            cc: 'Campaign Content',
+            ci: 'Campaign ID',
+            gclid: 'Google AdWords ID',
+            dclid: 'Google Display Ads ID',
+            sr: 'Screen Resolution',
+            vp: 'Viewport size',
+            de: 'Document Encoding',
+            sd: 'Screen Colors',
+            ul: 'User Language',
+            je: 'Java Enabled',
+            fl: 'Flash Version',
+            t: 'Hit type',
+            ni: 'Non-Interaction Hit',
+            dl: 'Document location URL',
+            dh: 'Document Host Name',
+            dp: 'Document Path',
+            dt: 'Document Title',
+            cd: 'Screen Name',
+            linkid: 'Link ID',
+            an: 'Application Name',
+            aid: 'Application ID',
+            av: 'Application Version',
+            aiid: 'Application Installer ID',
+            ec: 'Event Category',
+            ea: 'Event Action',
+            el: 'Event Label',
+            ev: 'Event Value',
+            sn: 'Social Network',
+            sa: 'Social Action',
+            st: 'Social Action Target',
+            utc: 'User timing category',
+            utv: 'User timing variable name',
+            utt: 'User timing time',
+            utl: 'User timing label',
+            plt: 'Page Load Time',
+            dns: 'DNS Time',
+            pdt: 'Page Download Time',
+            rrt: 'Redirect Response Time',
+            tcp: 'TCP Connect Time',
+            srt: 'Server Response Time',
+            dit: 'DOM Interactive Time',
+            clt: 'Content Load Time',
+            exd: 'Exception Description',
+            exf: 'Is Exception Fatal?',
+            xid: 'Experiment ID',
+            xvar: 'Experiment Variant'
+          };
+          for (let i = 1; i < 201; i++) {
+            data['cd' + i] = 'Custom dimension #' + i;
+            data['cm' + i] = 'Custom metric #' + i;
+          }
+          return data;
+        }
+      }
     },
 
     observers: [
       '_configureBaseParams(inited, clientId, userId, trackingId, anonymizeIp, dataSource, ' +
         'referrer, campaignName, campaignSource, campaignMedium, appVersion, appName, appId, ' +
-        'appInstallerId, customDimensions.*, customMetrics.*)'
+        'appInstallerId, customDimensions.*, customMetrics.*)',
+      '_cidChanged(clientId)'
     ],
 
-    ready: function() {
-      this.getCid().then(() => {
+    _cidChanged: function(clientId) {
+      if (clientId) {
         this._setInited(true);
-      }).catch((e) => {
-        console.error(e);
-        console.warn('The tracking code will not work until this error is not corrected');
-      });
-    },
-
-    getCid: function() {
-      return Promise.reject(
-        new Error('Function `getCid` must be implemented by the element that inherits from ' +
-        'ArcBehaviors.AppAnalyticsBehavior'));
+      }
     },
 
     addCustomDimension: function(index, value) {
@@ -375,13 +485,13 @@ the License.
      * Sends the exception hit to GA.
      *
      * @param {String} description A description of the exception.
-     * @param {Boolean} isFatal Specifies whether the exception was fatal.
+     * @param {Boolean} fatal Specifies whether the exception was fatal.
      */
-    sendException: function(description, isFatal) {
-      isFatal = isFatal ? '1' : '0';
+    sendException: function(description, fatal) {
+      fatal = fatal ? '1' : '0';
       this.sendHit('exception', {
         exd: description,
-        exf: isFatal
+        exf: fatal
       });
     },
     /**
@@ -560,16 +670,57 @@ the License.
 
     printParamsTable: function(list) {
       var map = {};
+      var debugList = [];
       for (let param in list) {
+        let name = this._paramsMap[param] || param;
+        let value = decodeURIComponent(list[param]);
         map[param] = {
-          value: list[param]
+          value: value,
+          name: name
         };
+        debugList.push({
+          param: param,
+          value: value,
+          name: name
+        });
       }
-      console.table(map, ['value']);
+      console.table(map, ['name', 'value']);
+      this.fire('app-analytics-hit-debug', {
+        debug: debugList
+      });
     },
 
-    sendBulk: function() {
-      throw new Error('Not ready yet.');
+    /**
+     * This method sends GA data in bulk.
+     *
+     * There are some limitations on a GA server side:
+     * - A maximum of 20 hits can be specified per request.
+     * - The total size of all hit payloads cannot be greater than 16K bytes.
+     * - No single hit payload can be greater than 8K bytes.
+     *
+     * The input `list` expect to have two parameters:
+     * - time {Number} as a number of milliseconds when the original hit took
+     * place. This function will calculate the delta between original event
+     * and now so the GA server may apply additional calculations.
+     * - body {String} as a original body that was to be send.
+     *
+     * @param {Array} list Array of hits that waren't sent earier.
+     */
+    sendBulk: function(list) {
+      var now = Date.now();
+      // Append delat argument.
+      var body = list.map((item, i) => {
+        if (i >= 20) {
+          return;
+        }
+        let delta = now - item.time;
+        let body = item.body;
+        body += '&qt=' + delta;
+      });
+      body = body.join('\n');
+
+      console.log('Batch body', body);
+      throw 'aaaaa';
     },
 
     transport: function(body) {
@@ -581,9 +732,21 @@ the License.
         method: 'POST',
         body: body
       };
-      fetch('https://www.google-analytics.com/collect', init).then((response) => {
+      var url = 'https://www.google-analytics.com';
+      if (this.debugEndpoint) {
+        url += '/debug';
+      }
+      url += '/collect';
+      fetch(url, init).then((response) => {
         if (response.status !== 200) {
           this._storeOffline(body);
+        }
+        if (this.debugEndpoint) {
+          return response.json().then((result) => {
+            this.fire('app-analytics-structure-debug', {
+              'debug': result
+            });
+          });
         }
       }).catch(() => {
         if (!navigator.onLine) {
