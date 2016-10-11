@@ -17,13 +17,14 @@ the License.
 <link rel="import" href="../app-pouchdb/app-pouchdb-query.html">
 <link rel="import" href="../app-pouchdb/app-pouchdb-document.html">
 <link rel="import" href="../uuid-generator/uuid-generator.html">
+<link rel="import" href="../connectivity-state/connectivity-state.html">
 <link rel="import" href="app-analytics-behavior.html">
 <!--
 `<app-analytics>` An element that support Google Analytics analysis
 
 ### Example
 ```
-<app-analytics tracking-id="UA-XXXXXXX"></app-analytics>
+<app-analytics tracking-id="UA-XXXXXXX-Y"></app-analytics>
 ```
 
 @group Logic Elements
@@ -40,9 +41,10 @@ the License.
     </style>
     <app-pouchdb-conflict-resolution strategy="lastWriteWins"></app-pouchdb-conflict-resolution>
     <app-pouchdb-index db-name="[[_analyticsStore]]" fields="[[_storeIndexFields]]"></app-pouchdb-index>
-    <app-pouchdb-query id="q" db-name="[[_analyticsStore]]" id="query" selector="sent $eq false" sort="[[_storeIndexFields]]" fields="[[_storeQueryFields]]" data="{{_offlineResult}}"></app-pouchdb-query>
-    <app-pouchdb-document db-name="[[_analyticsStore]]" doc-id="cid" data="{{_cidData}}"></app-pouchdb-document>
+    <app-pouchdb-query id="q" db-name="[[_analyticsStore]]" id="query" limit="20" selector="sent $eq false" sort="[[_storeIndexFields]]" fields="[[_storeQueryFields]]" data="{{_offlineResult}}"></app-pouchdb-query>
+    <app-pouchdb-document db-name="[[_analyticsStore]]" doc-id="metadata" data="{{_metaData}}"></app-pouchdb-document>
     <uuid-generator id="uuid"></uuid-generator>
+    <connectivity-state online="{{isOnline}}"></connectivity-state>
   </template>
   <script>
   Polymer({
@@ -84,20 +86,41 @@ the License.
       },
       // List of commands that should be executed.
       _offlineResult: Array,
-      _cidData: Object,
+      /**
+       * Internal metadata that keeps information about:
+       * - cid - client id used to recognize the user accross the sessions
+       * - enabled - information is this instance of analytics is enabled.
+       */
+      _metaData: Object,
 
       customDataQueue: {
         type: Array,
         value: function() {
           return [];
         }
+      },
+
+      queue: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+      // If true the app probably is online. See `<connectivity-state>`.
+      isOnline: Boolean,
+      /**
+       * If true tracking is active.
+       */
+      enabled: {
+        type: Boolean,
+        notify: true
       }
     },
 
     observers: [
-      '_setAnalyticsPermitted(enabled)',
-      '__cidDataChanged(_cidData.*)',
-      '__uploadOffline(inited)'
+      '_metaDataChanged(_metaData.*)',
+      '__uploadOffline(inited, isOnline, _offlineResult.*)',
+      '__checkOfflineUpload(isOnline)'
     ],
 
     listeners: {
@@ -116,47 +139,51 @@ the License.
       this.unlisten(this._eventTarget, 'send-analytics', '_sendHandler');
     },
 
-    __cidDataChanged: function() {
-      var c = this._cidData;
-      if (!c || !c.clientId) {
+    /**
+     * Sets metadata for the app and manages defaults.
+     * This function initialize library basic configuraion if it hasen't
+     * been already set.
+     * Finally it will set corresponding properties on the element.
+     */
+    _metaDataChanged: function(change) {
+      var meta = this._metaData;
+      if (!meta) {
         return;
       }
-      this.clientId = c.clientId;
-    },
-
-    getCid: function() {
-      if (!this.clientId) {
-        let uuid = this.$.uuid.generate();
-        this._cidData = {
-          clientId: uuid
-        };
-      }
-      return Promise.resolve(this.clientId);
-    },
-
-    _setAnalyticsPermitted: function(permitted) {
-      if (!this.service) {
-        this.fire('error', {
-          'message': 'Trying to set Google Analytics config when library not ready.'
-        });
-        return false;
-      }
-
-      this.service.getConfig().addCallback((config) => {
-        if (config.isTrackingPermitted() === permitted) {
-          return;
-        }
-        config.setTrackingPermitted(permitted, () => {
-          this.fire('app-analytics-permitted-changed', {
-            permitted: permitted
+      if (meta._id && meta._rev) {
+        // set defaults
+        if (typeof meta.enabled === 'undefined') {
+          this.async(function() {
+            this.set('_metaData.enabled', true);
           });
-          if (this.debug) {
-            console.info('[Google Analytics] Tracking is ' + (permitted ? '' : 'not ') +
-              'permitted');
-          }
-        });
-      });
+        }
+        if (typeof meta.disableTracking === 'undefined') {
+          this.async(function() {
+            this.set('_metaData.disableTracking', false);
+          });
+        }
+        if (!meta.cid) {
+          this.async(function() {
+            let uuid = this.clientId;
+            if (!uuid) {
+              uuid = this.$.uuid.generate();
+            }
+            this.set('_metaData.cid', uuid);
+          });
+        }
+      }
+
+      if (meta.cid !== this.clientId) {
+        this.set('clientId', meta.cid);
+      }
+      if (meta.enabled !== this.enabled) {
+        this.set('enabled', Boolean(meta.enabled));
+      }
+      if (meta.disableTracking !== this.disableTracking) {
+        this.set('disableTracking', Boolean(meta.disableTracking));
+      }
     },
+
     // An event handler for `send-analytics`
     _sendHandler: function(e) {
       if (!e.detail) {
@@ -168,14 +195,15 @@ the License.
         return;
       }
 
-      if (!this.gaReady) {
+      if (!this.inited) {
         this.queue.push(e);
         return;
       }
+
       var d = e.detail;
       switch (d.type) {
-        case 'screen':
-          this.tracker.sendAppView(d.name);
+        case 'screenview':
+          this.sendScreen(d.name);
           e.detail.sent = true;
           break;
         case 'event':
@@ -183,15 +211,21 @@ the License.
           e.detail.sent = true;
           break;
         case 'exception':
-          this.tracker.sendException(d.description, d.critical);
+          this.sendException(d.description, d.fatal);
           e.detail.sent = true;
           break;
         case 'social':
-          this.tracker.sendSocial(d.network, d.action, d.target);
+          this.sendSocial(d.network, d.action, d.target);
+          e.detail.sent = true;
           break;
-        case 'timings':
-          //category, variable, value, opt_label, opt_sampleRate
-          this.tracker.sendTimings(d.category, d.variable, d.value, d.label, d.sampleRate);
+        case 'timing':
+          try {
+            this.sendTimings(d.category, d.variable, d.value, d.label);
+            e.detail.sent = true;
+          } catch (e) {
+            e.detail.sent = false;
+            e.detail.message = e.message;
+          }
           break;
         default:
           e.detail.sent = false;
@@ -227,6 +261,7 @@ the License.
       }
       this.customDataQueue = [];
     },
+
     // Handler for app-analytics-custom-changed event. Registers a new custom property.
     _customPropertyChanged: function(e) {
       if (!this.tracker) {
@@ -258,28 +293,54 @@ the License.
       });
     },
 
-    __uploadOffline: function() {
-      if (!this.inited) {
+    /**
+     * The function checks if the app is online, then checks is has some data
+     * to send to GA server and finally sends them.
+     */
+    __checkOfflineUpload: function(isOnline) {
+      if (!isOnline) {
+        return;
+      }
+      this.$.q.refresh();
+    },
+
+    /**
+     * Uploads Google Analytics offline data to GA server.
+     * Offline store stores full GA command ready to sent to GA server.
+     * When the app initializes or network state change to online it will
+     * check if any data exists in the send queue (in the database) and if
+     * they are it will upload data to the server.
+     *
+     * Note, that according to GA documentation a hist taht are more than 4
+     * hrs old may not be processed.
+     *
+     * Takes 20 first elements,
+     * Upload to the GA server,
+     * Update their status,
+     * query db (call refresh)
+     * end.
+     */
+    __uploadOffline: function(inited, isOnline) {
+      if (!inited || !isOnline) {
         return;
       }
 
-      this.async(() => {
-        if (!navigator.onLine || !this._offlineResult.length) {
-          return;
-        }
-        let promises = this._offlineResult.map((item) => {
-          return this.$.q.db.get(item._id);
-        });
-        Promise.all(promises).then((list) => {
-          this.sendBulk(list);
-        })
-        .then((list) => {
-          list.forEach((item) => item.sent = true);
-          return this.$.q.db.bulkDocs(list);
-        })
-        .catch((e) => console.error(e));
-      }, 200);
+      if (!this._offlineResult || !this._offlineResult.length) {
+        return;
+      }
 
+      let promises = this._offlineResult.map((item) => {
+        return this.$.q.db.get(item._id);
+      });
+      Promise.all(promises).then((list) => {
+        this.sendBulk(list);
+      })
+      .then((list) => {
+        console.log('__uploadOffline');
+        // list.forEach((item) => item.sent = true);
+        // return this.$.q.db.bulkDocs(list);
+      })
+      .catch((e) => console.error(e));
     }
   });
   </script>
