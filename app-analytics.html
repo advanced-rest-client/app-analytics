@@ -1,0 +1,286 @@
+<!--
+@license
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-pouchdb/app-pouchdb-conflict-resolution.html">
+<link rel="import" href="../app-pouchdb/app-pouchdb-index.html">
+<link rel="import" href="../app-pouchdb/app-pouchdb-query.html">
+<link rel="import" href="../app-pouchdb/app-pouchdb-document.html">
+<link rel="import" href="../uuid-generator/uuid-generator.html">
+<link rel="import" href="app-analytics-behavior.html">
+<!--
+`<app-analytics>` An element that support Google Analytics analysis
+
+### Example
+```
+<app-analytics tracking-id="UA-XXXXXXX"></app-analytics>
+```
+
+@group Logic Elements
+@element app-analytics
+@demo demo/index.html
+
+-->
+<dom-module id="app-analytics">
+  <template>
+    <style>
+     :host {
+      display: none;
+    }
+    </style>
+    <app-pouchdb-conflict-resolution strategy="lastWriteWins"></app-pouchdb-conflict-resolution>
+    <app-pouchdb-index db-name="[[_analyticsStore]]" fields="[[_storeIndexFields]]"></app-pouchdb-index>
+    <app-pouchdb-query id="q" db-name="[[_analyticsStore]]" id="query" selector="sent $eq false" sort="[[_storeIndexFields]]" fields="[[_storeQueryFields]]" data="{{_offlineResult}}"></app-pouchdb-query>
+    <app-pouchdb-document db-name="[[_analyticsStore]]" doc-id="cid" data="{{_cidData}}"></app-pouchdb-document>
+    <uuid-generator id="uuid"></uuid-generator>
+  </template>
+  <script>
+  Polymer({
+    is: 'app-analytics',
+    behaviors: [ArcBehaviors.AppAnalyticsBehavior],
+    /**
+     * An event fired when the Google Analytics configuration is set and ready to rock.
+     * It doesn't matter if tracking is permitted. The tracking object will be ready
+     * to enable tracking on user demand.
+     *
+     * @event app-analytics-ready
+     * @param {String} trackingId A tracking ID related to this configuration.
+     */
+    /**
+     * Firwed when Library `permitted` state changed.
+     *
+     * @event app-analytics-permitted-changed
+     * @param {Boolean} permitted Current state.
+     */
+    properties: {
+      // Name of the datastore of the GA offline data.
+      _analyticsStore: {
+        type: String,
+        value: 'analytics-offline-store'
+      },
+      // Oflline storage indexes
+      _storeIndexFields: {
+        type: Array,
+        value: function() {
+          return ['sent'];
+        }
+      },
+      // Offline storage query fields.
+      _storeQueryFields: {
+        type: Array,
+        value: function() {
+          return ['_id', 'sent'];
+        }
+      },
+      // List of commands that should be executed.
+      _offlineResult: Array,
+      _cidData: Object,
+
+      customDataQueue: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+    },
+
+    observers: [
+      '_setAnalyticsPermitted(enabled)',
+      '__cidDataChanged(_cidData.*)',
+      '__uploadOffline(inited)'
+    ],
+
+    listeners: {
+      'app-analytics-custom-changed': '_customPropertyChanged',
+      'app-analytics-custom-removed': '_customPropertyRemoved'
+    },
+
+    attached: function() {
+      this._eventTarget = Polymer.dom(this).host || document;
+      this.listen(this._eventTarget, 'app-analytics-permitted', '_permittedHandler');
+      this.listen(this._eventTarget, 'send-analytics', '_sendHandler');
+    },
+
+    detached: function() {
+      this.unlisten(this._eventTarget, 'app-analytics-permitted', '_permittedHandler');
+      this.unlisten(this._eventTarget, 'send-analytics', '_sendHandler');
+    },
+
+    __cidDataChanged: function() {
+      var c = this._cidData;
+      if (!c || !c.clientId) {
+        return;
+      }
+      this.clientId = c.clientId;
+    },
+
+    getCid: function() {
+      if (!this.clientId) {
+        let uuid = this.$.uuid.generate();
+        this._cidData = {
+          clientId: uuid
+        };
+      }
+      return Promise.resolve(this.clientId);
+    },
+
+    _setAnalyticsPermitted: function(permitted) {
+      if (!this.service) {
+        this.fire('error', {
+          'message': 'Trying to set Google Analytics config when library not ready.'
+        });
+        return false;
+      }
+
+      this.service.getConfig().addCallback((config) => {
+        if (config.isTrackingPermitted() === permitted) {
+          return;
+        }
+        config.setTrackingPermitted(permitted, () => {
+          this.fire('app-analytics-permitted-changed', {
+            permitted: permitted
+          });
+          if (this.debug) {
+            console.info('[Google Analytics] Tracking is ' + (permitted ? '' : 'not ') +
+              'permitted');
+          }
+        });
+      });
+    },
+    // An event handler for `send-analytics`
+    _sendHandler: function(e) {
+      if (!e.detail) {
+        return;
+      }
+      if (!this.enabled) {
+        e.detail.sent = false;
+        e.detail.message = 'Tracking is disabled.';
+        return;
+      }
+
+      if (!this.gaReady) {
+        this.queue.push(e);
+        return;
+      }
+      var d = e.detail;
+      switch (d.type) {
+        case 'screen':
+          this.tracker.sendAppView(d.name);
+          e.detail.sent = true;
+          break;
+        case 'event':
+          this.sendEvent(d.category, d.action, d.label, d.value);
+          e.detail.sent = true;
+          break;
+        case 'exception':
+          this.tracker.sendException(d.description, d.critical);
+          e.detail.sent = true;
+          break;
+        case 'social':
+          this.tracker.sendSocial(d.network, d.action, d.target);
+          break;
+        case 'timings':
+          //category, variable, value, opt_label, opt_sampleRate
+          this.tracker.sendTimings(d.category, d.variable, d.value, d.label, d.sampleRate);
+          break;
+        default:
+          e.detail.sent = false;
+          e.detail.message = 'Unknown type [' + d.type + ']';
+          break;
+      }
+    },
+
+    // Enable or disable GA.
+    _permittedHandler: function(e) {
+      if (typeof e.detail.permitted === 'undefined') {
+        e.detail.error = true;
+        e.detail.message = 'Set `permitted` detail property first.';
+        return;
+      }
+      var state = Boolean(e.detail.permitted);
+      this.set('enabled', state);
+    },
+
+    _processQueue: function() {
+      var len = this.queue.length;
+      if (len) {
+        for (let i = 0; i < len; i++) {
+          this._sendHandler(this.queue[i]);
+        }
+      }
+      this.queue = [];
+      len = this.customDataQueue.length;
+      if (len) {
+        for (let i = 0; i < len; i++) {
+          this._customPropertyChanged(this.customDataQueue[i]);
+        }
+      }
+      this.customDataQueue = [];
+    },
+    // Handler for app-analytics-custom-changed event. Registers a new custom property.
+    _customPropertyChanged: function(e) {
+      if (!this.tracker) {
+        this.customDataQueue.push(e);
+        return;
+      }
+      var d = e.detail;
+      if (d.type === 'dimension') {
+        this.addCustomDimension(d.index, d.value);
+      } else if (d.type === 'metric') {
+        this.addCustomMetric(d.index, d.value);
+      } else {
+        return;
+      }
+    },
+    // Handler for app-analytics-custom-removed event. Unregisters a custom property.
+    _customPropertyRemoved: function(e) {
+      if (this.removedCustomData.indexOf(e.detail.name) !== -1) {
+        return;
+      }
+      this.removedCustomData.push(e.detail.name);
+    },
+
+    _storeOffline: function(data) {
+      this.$.q.db.post({
+        time: Date.now(),
+        body: data,
+        sent: false
+      });
+    },
+
+    __uploadOffline: function() {
+      if (!this.inited) {
+        return;
+      }
+
+      this.async(() => {
+        if (!navigator.onLine || !this._offlineResult.length) {
+          return;
+        }
+        let promises = this._offlineResult.map((item) => {
+          return this.$.q.db.get(item._id);
+        });
+        Promise.all(promises).then((list) => {
+          this.sendBulk(list);
+        })
+        .then((list) => {
+          list.forEach((item) => item.sent = true);
+          return this.$.q.db.bulkDocs(list);
+        })
+        .catch((e) => console.error(e));
+      }, 200);
+
+    }
+  });
+  </script>
+</dom-module>

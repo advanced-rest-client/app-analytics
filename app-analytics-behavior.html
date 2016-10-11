@@ -1,0 +1,599 @@
+<!--
+@license
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<script>
+(function() {
+  'use strict';
+  if (!('ArcBehaviors' in window)) {
+    window.ArcBehaviors = {};
+  }
+  /**
+   * Common function implementing Google's measurement protocol.
+   * @polymerBehavior
+   */
+  ArcBehaviors.AppAnalyticsBehavior = {
+    properties: {
+      /**
+       * The Client ID for the mearusement protocol.
+       *
+       * **It is required for all types of calls.**
+       *
+       * The value of this field should be a random UUID (version 4) as described
+       * in http://www.ietf.org/rfc/rfc4122.txt
+       *
+       * - Parameter: **cid**
+       * - Example value: 35009a79-1a05-49d7-b876-2b884d0f825b
+       * - Example usage: cid=35009a79-1a05-49d7-b876-2b884d0f825b
+       */
+      clientId: {
+        type: String,
+        value: ''
+      },
+      /**
+       * This is intended to be a known identifier for a user provided by the site owner/tracking
+       * library user. It must not itself be PII (personally identifiable information).
+       * The value should never be persisted in GA cookies or other Analytics provided storage.
+       *
+       * - Parameter: **uid**
+       * - Example value: as8eknlll
+       * - Example usage: uid=as8eknlll
+       *
+       */
+      userId: {
+        type: String,
+        value: ''
+      },
+      /**
+       * **Required for all hit types.**
+       *
+       * The Protocol version. The current value is '1'. This will only change when there
+       * are changes made that are not backwards compatible.
+       *
+       * - Parameter: **v**
+       * - Example value: 1
+       * - Example usage: v=1
+       */
+      protocolVersion: {
+        type: String,
+        value: '1',
+        readOnly: true
+      },
+      /**
+       * **Required for all hit types.**
+       *
+       * The tracking ID / web property ID. The format is UA-XXXX-Y.
+       * All collected data is associated by this ID.
+       *
+       * - Parameter: **tid**
+       * - Example value: UA-XXXX-Y
+       * - Example usage: tid=UA-XXXX-Y
+       */
+      trackingId: String,
+      /**
+       * When present, the IP address of the sender will be anonymized.
+       * For example, the IP will be anonymized if any of the following parameters are present in
+       * the payload: &aip=, &aip=0, or &aip=1
+       *
+       * - Parameter: **aip**
+       * - Example value: 1
+       * - Example usage: aip=1
+       */
+      anonymizeIp: {
+        type: Boolean,
+        value: false
+      },
+      /**
+       * Indicates the data source of the hit. Hits sent from analytics.js will have data source
+       * set to 'web'; hits sent from one of the mobile SDKs will have data source set to 'app'.
+       *
+       * - Parameter: **ds**
+       * - Example value: call center
+       * - Example usage: ds=call%20center
+       */
+      dataSource: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Used to send a random number in GET requests to ensure browsers and proxies
+       * don't cache hits.
+       *
+       * - Parameter: **z**
+       * - Example value: 289372387623
+       * - Example usage: z=289372387623
+       */
+      useCacheBooster: Boolean,
+      /**
+       * Specifies which referral source brought traffic to a website. This value is also used to
+       * compute the traffic source. The format of this value is a URL.
+       *
+       * - Parameter: **dr**
+       * - Example value: http://example.com
+       * - Example usage: dr=http%3A%2F%2Fexample.com
+       */
+      referrer: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Specifies the campaign name.
+       *
+       * - Parameter: **cn**
+       * - Example value: (direct)
+       * - Example usage: cn=%28direct%29
+       */
+      campaignName: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Specifies the campaign source.
+       *
+       * - Parameter: **cs**
+       * - Example value: (direct)
+       * - Example usage: cs=%28direct%29
+       */
+      campaignSource: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Specifies the campaign medium.
+       *
+       * - Parameter: **cm**
+       * - Example value: organic
+       * - Example usage: cm=organic
+       */
+      campaignMedium: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Specifies the application version.
+       *
+       * - Parameter: **av**
+       * - Example value: 1.2
+       * - Example usage: av=1.2
+       */
+      appVersion: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Specifies the application name. This field is required for any hit that has app related
+       * data (i.e., app version, app ID, or app installer ID). For hits sent to web properties,
+       * this field is optional.
+       *
+       * - Parameter: **an**
+       * - Example My App
+       * - Example usage: an=My%20App
+       */
+      appName: String,
+      /**
+       * Application identifier.
+       *
+       * - Parameter: **aid**
+       * - Example value: com.company.app
+       * - Example usage: aid=com.company.app
+       */
+      appId: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Application installer identifier.
+       *
+       * - Parameter: **aiid**
+       * - Example value: com.platform.vending
+       * - Example usage: aiid=com.platform.vending
+       */
+      appInstallerId: {
+        type: String,
+        value: ''
+      },
+      /**
+       * Each custom metric has an associated index. There is a maximum of 20 custom
+       * metrics (200 for Analytics 360 accounts). The metric index must be a positive
+       * integer between 1 and 200, inclusive.
+       *
+       * - Parameter: **cm<metricIndex>**
+       * - Example value: 47
+       * - Example usage: cm1=47
+       */
+      customMetrics: {
+        type: Array,
+        readOnly: true,
+        value: function() {
+          return [];
+        }
+      },
+      /**
+       * Each custom dimension has an associated index. There is a maximum of 20 custom
+       * dimensions (200 for Analytics 360 accounts). The dimension index must be a positive
+       * integer between 1 and 200, inclusive.
+       *
+       * - Parameter: **cd<dimensionIndex>**
+       * - Example value: Sports
+       * - Example usage: cd1=Sports
+       */
+      customDimensions: {
+        type: Array,
+        readOnly: true,
+        value: function() {
+          return [];
+        }
+      },
+
+      // If true then the library is initialized.
+      inited: {
+        type: Boolean,
+        value: false,
+        readOnly: true,
+        notify: true
+      },
+      // Generated POST parameters based on a params
+      baseParams: {
+        type: Array,
+        readOnly: true,
+        value: function() {
+          return [];
+        }
+      },
+      /**
+       * If set to true it will prints debug messages into the console.
+       */
+      debug: Boolean
+    },
+
+    observers: [
+      '_configureBaseParams(inited, clientId, userId, trackingId, anonymizeIp, dataSource, ' +
+        'referrer, campaignName, campaignSource, campaignMedium, appVersion, appName, appId, ' +
+        'appInstallerId, customDimensions.*, customMetrics.*)'
+    ],
+
+    ready: function() {
+      this.getCid().then(() => {
+        this._setInited(true);
+      }).catch((e) => {
+        console.error(e);
+        console.warn('The tracking code will not work until this error is not corrected');
+      });
+    },
+
+    getCid: function() {
+      return Promise.reject(
+        new Error('Function `getCid` must be implemented by the element that inherits from ' +
+        'ArcBehaviors.AppAnalyticsBehavior'));
+    },
+
+    addCustomDimension: function(index, value) {
+      index = Number(index);
+      if (index !== index) {
+        throw new Error('Index is not a number.');
+      }
+      if (index <= 0 || index > 200) {
+        throw new Error('Index out of bounds');
+      }
+      var pos = this.customDimensions.findIndex((i) => i.index === index);
+      if (pos !== -1) {
+        this.set(`customDimensions.${pos}.value`, value);
+        return;
+      }
+      this.push('customDimensions', {
+        index: index,
+        value: value
+      });
+    },
+
+    removeCustomDimension: function(index) {
+      var pos = this.customDimensions.findIndex((i) => i.index === index);
+      if (pos === -1) {
+        return;
+      }
+      this.splice('customDimensions', pos, 1);
+    },
+
+    addCustomMetric: function(index, value) {
+      index = Number(index);
+      if (index !== index) {
+        throw new Error('Index is not a number.');
+      }
+      if (index <= 0 || index > 200) {
+        throw new Error('Index out of bounds');
+      }
+      var pos = this.customMetrics.findIndex((i) => i.index === index);
+      if (pos !== -1) {
+        this.set(`customMetrics.${pos}.value`, value);
+        return;
+      }
+      this.push('customMetrics', {
+        index: index,
+        value: value
+      });
+    },
+
+    removeCustomMetric: function(index) {
+      var pos = this.customMetrics.findIndex((i) => i.index === index);
+      if (pos === -1) {
+        return;
+      }
+      this.splice('customMetrics', pos, 1);
+    },
+    /**
+     * Sends the screenview hit to the GA.
+     *
+     * @param {String} name Screen name.
+     */
+    sendScreen: function(name) {
+      this.sendHit('screenview', {
+        cd: name
+      });
+    },
+    /**
+     * Sends event tracking.
+     *
+     * @param {String} category Specifies the event category. Must not be empty.
+     * @param {String} action Specifies the event action. Must not be empty.
+     * @param {String?} label Specifies the event label. Optional value.
+     * @param {Number?} value Specifies the event value. Values must be non-negative. Optional.
+     */
+    sendEvent: function(category, action, label, value) {
+      var missing = [];
+      if (!category) {
+        missing.push('category');
+      }
+      if (!action) {
+        missing.push('action');
+      }
+      if (missing.length) {
+        throw new Error('Missing required parameters: ' + missing.join(', '));
+      }
+      var opts = {
+        ec: category,
+        ea: action
+      };
+      if (label) {
+        opts.el = label;
+      }
+      if (value) {
+        opts.ev = value;
+      }
+      this.sendHit('event', opts);
+    },
+    /**
+     * Sends the exception hit to GA.
+     *
+     * @param {String} description A description of the exception.
+     * @param {Boolean} isFatal Specifies whether the exception was fatal.
+     */
+    sendException: function(description, isFatal) {
+      isFatal = isFatal ? '1' : '0';
+      this.sendHit('exception', {
+        exd: description,
+        exf: isFatal
+      });
+    },
+    /**
+     * Track social interaction
+     *
+     * @param {String} network Specifies the social network, for example Facebook or Google Plus.
+     * @param {String} action Specifies the social interaction action. For example on Google Plus
+     * when a user clicks the +1 button, the social action is 'plus'.
+     * @param {String} target Specifies the target of a social interaction. This value is
+     * typically a URL but can be any text.
+     */
+    sendSocial: function(network, action, target) {
+      var missing = [];
+      if (!network) {
+        missing.push('network');
+      }
+      if (!action) {
+        missing.push('action');
+      }
+      if (!target) {
+        missing.push('target');
+      }
+      if (missing.length) {
+        throw new Error('Missing required parameters: ' + missing.join(', '));
+      }
+      this.sendHit('social', {
+        sn: network,
+        sa: action,
+        st: target
+      });
+    },
+    /**
+     * Track timings in the app.
+     *
+     * @param {String} category Specifies the user timing category. **required**
+     * @param {String} variable Specifies the user timing variable. **required**
+     * @param {Number} time Specifies the user timing value. The value is in milliseconds.
+     * **required**
+     * @param {String} label Specifies the user timing label.
+     */
+    sendTimings: function(category, variable, time, label) {
+      var missing = [];
+      if (!category) {
+        missing.push('category');
+      }
+      if (!variable) {
+        missing.push('variable');
+      }
+      if (!time) {
+        missing.push('time');
+      }
+      if (missing.length) {
+        throw new Error('Missing required parameters: ' + missing.join(', '));
+      }
+      var opts = {
+        utc: category,
+        utv: variable,
+        utt: time
+      };
+      if (label) {
+        opts.utl = label;
+      }
+      this.sendHit('timing', opts);
+    },
+    /**
+     * Send a hit to the GA server.
+     * The `type` parameter is required for all types of hits.
+     *
+     * @param {String} type The type of hit. Must be one of 'pageview', 'screenview', 'event',
+     * 'transaction', 'item', 'social', 'exception', 'timing'.
+     * @param {Array<String,String>} map of params to send wit this hit.
+     */
+    sendHit: function(type, params) {
+      if (['pageview', 'screenview', 'event', 'transaction', 'item', 'social', 'exception',
+        'timing'].indexOf(type) === -1) {
+        throw new Error('Unknown hit type.');
+      }
+      params.t = type;
+      this._processParams(params);
+      var post = Object.assign({}, this.baseParams, params);
+      var body = this._createBody(post);
+      if (this.debug) {
+        console.group('Running command for ', type);
+        this.printParamsTable(post);
+        console.groupEnd();
+      }
+      this.transport(body);
+    },
+
+    _processParams: function(params) {
+      for (let param in params) {
+        params[param] = encodeURIComponent(params[param]);
+      }
+    },
+    // Creates a post body from the params.
+    _createBody: function(params) {
+      var result = '';
+      for (let param in params) {
+        if (result) {
+          result += '&';
+        }
+        result += param + '=' + params[param];
+      }
+      return result;
+    },
+
+    _configureBaseParams: function(inited, clientId, userId, trackingId, anonymizeIp, dataSource,
+      referrer, campaignName, campaignSource, campaignMedium, appVersion, appName, appId,
+      appInstallerId) {
+
+      if (!inited) {
+        return;
+      }
+      var data = {
+        v: this.protocolVersion,
+        tid: trackingId,
+        cid: clientId,
+        ul: navigator.language,
+        sr: screen.width + 'x' + screen.height,
+        sd: screen.pixelDepth,
+        vp: window.innerWidth + 'x' + window.innerHeight
+      };
+      var iw = window.innerWidth;
+      var ih = window.innerHeight;
+      if (iw && ih) {
+        data.vp = iw + 'x' + ih;
+      }
+
+      if (userId) {
+        data.uid = userId;
+      }
+      if (anonymizeIp) {
+        data.aip = '1';
+      }
+      if (dataSource) {
+        data.ds = encodeURIComponent(dataSource);
+      }
+      if (referrer) {
+        data.dr = encodeURIComponent(referrer);
+      }
+      if (campaignName) {
+        data.cn = encodeURIComponent(campaignName);
+      }
+      if (campaignSource) {
+        data.cs = encodeURIComponent(campaignSource);
+      }
+      if (campaignMedium) {
+        data.cm = encodeURIComponent(campaignMedium);
+      }
+      if (appVersion) {
+        data.av = encodeURIComponent(appVersion);
+      }
+      if (appName) {
+        data.an = encodeURIComponent(appName);
+      }
+      if (appId) {
+        data.aid = encodeURIComponent(appId);
+      }
+      if (appInstallerId) {
+        data.appInstallerId = encodeURIComponent(appInstallerId);
+      }
+
+      if (this.customMetrics.length) {
+        this.customMetrics.forEach((cm) => {
+          data['cm' + cm.index] = encodeURIComponent(cm.value);
+        });
+      }
+      if (this.customDimensions.length) {
+        this.customDimensions.forEach((cd) => {
+          data['cd' + cd.index] = encodeURIComponent(cd.value);
+        });
+      }
+
+      this._setBaseParams(data);
+    },
+
+    printParamsTable: function(list) {
+      var map = {};
+      for (let param in list) {
+        map[param] = {
+          value: list[param]
+        };
+      }
+      console.table(map, ['value']);
+    },
+
+    sendBulk: function() {
+      throw new Error('Not ready yet.');
+    },
+
+    transport: function(body) {
+      if (!navigator.onLine) {
+        this._storeOffline(body);
+        return;
+      }
+      var init = {
+        method: 'POST',
+        body: body
+      };
+      fetch('https://www.google-analytics.com/collect', init).then((response) => {
+        if (response.status !== 200) {
+          this._storeOffline(body);
+        }
+      }).catch(() => {
+        if (!navigator.onLine) {
+          this._storeOffline(body);
+          return;
+        }
+      });
+    },
+    // Should be implemented by element that tmplements this behavior.
+    _storeOffline: function() {}
+  };
+})();
+</script>
