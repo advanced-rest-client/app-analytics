@@ -1,12 +1,10 @@
-[![Build Status](https://travis-ci.org/advanced-rest-client/..svg?branch=master)](https://travis-ci.org/advanced-rest-client/.)  [![Dependency Status](https://dependencyci.com/github/advanced-rest-client/./badge)](https://dependencyci.com/github/advanced-rest-client/.)  
-
 # app-analytics
 
 `<app-analytics>` An element that support Google Analytics analysis
 
 ### Example
 ```
-<app-analytics tracking-id="UA-XXXXXXX"></app-analytics>
+<app-analytics tracking-id="UA-XXXXXXX-Y"></app-analytics>
 ```
 
 
