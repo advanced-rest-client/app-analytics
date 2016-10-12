@@ -26,7 +26,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../iron-pages/iron-pages.html">
   <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
   <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-fab-menu/paper-fab-menu.html">
+  <link rel="import" href="../../paper-fab-menu/paper-fab-menu-item.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="../../form-action-bar/form-action-bar.html">
+  <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
+
   <link rel="import" href="../app-analytics.html">
+  <link rel="import" href="../app-analytics-custom.html">
+
   <style is="custom-style" include="demo-pages-shared-styles">
    :host {
     --paper-button-disabled {
@@ -64,12 +72,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   h4 {
     @apply(--paper-font-caption);
     color: rgba(0, 0, 0, 0.54);
-  }
-
-  .actions {
-    @apply(--layout-horizontal);
-    @apply(--layout-end-justified);
-    margin: 16px 0;
   }
 
   paper-button[raised] {
@@ -136,6 +138,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   .error-info p {
     color: #EF5350;
   }
+
+  paper-fab-menu {
+    position: fixed;
+    bottom: 84px;
+    right: 24px;
+  }
+  .metric-row {
+    @apply(--layout-horizontal);
+    @apply(--layout-center);
+  }
+  .metric-row > *:not(:last-child) {
+    margin-right: 24px;
+  }
+
+  .metric-row > paper-input:last-of-type {
+    @apply(--layout-flex);
+  }
+
+  .metric-row > paper-input:first-of-type {
+    min-width: 120px;
+  }
+
+  #errorStatus {
+    color: #D32F2F;
+    font-weight: 500;
+    font-size: 17px;
+  }
+
   </style>
 </head>
 
@@ -145,6 +175,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h3>The `app-analytics`</h3>
       <section card>
         <h4>Bacsic information</h4>
+        <paper-toggle-button checked="{{disableTracking}}">Disable `app-analytics`</paper-toggle-button>
         <paper-input label="Tracking ID (UA-XXXX-Y)" value="{{trackingId}}"></paper-input>
         <div class="row">
           <paper-input label="App name" value="{{appName}}"></paper-input>
@@ -187,11 +218,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-input label="label" value="{{timingLabel}}"></paper-input>
           </section>
         </iron-pages>
-        <div class="actions">
-          <paper-button raised disabled$="[[!hitType]]" on-tap="send">Send hit</paper-button>
-        </div>
       </section>
-      <section card hidden="[[!logs]]">
+      <section card hidden="[[!hasCustomData]]">
+        <h4>Custom data</h4>
+        <template is="dom-if" if="[[customMetrics.length]]">
+          <h4>Custom metrics</h4>
+          <template is="dom-repeat" items="{{customMetrics}}" id="metricsList">
+            <div class="metric-row">
+              <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
+              <paper-input label="Value" value="{{item.value}}" type="number"></paper-input>
+              <paper-icon-button on-tap="_removeMetric" icon="remove" title="Remove custom metric"></paper-icon-button>
+            </div>
+          </template>
+        </template>
+        <template is="dom-if" if="[[customDimensions.length]]">
+          <h4>Custom dimensions</h4>
+          <template is="dom-repeat" items="{{customDimensions}}" id="dimensionsList">
+            <div class="metric-row">
+              <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
+              <paper-input label="Value" value="{{item.value}}"></paper-input>
+              <paper-icon-button on-tap="_removeDimension" icon="remove" title="Remove custom dimension"></paper-icon-button>
+            </div>
+          </template>
+        </template>
+      </section>
+      <section card hidden="[[!logs.length]]">
         <h4>Log</h4>
         <template is="dom-repeat" items="[[logs]]" index-as="index">
           <template is="dom-if" if="[[item.isHit]]" restamp="true">
@@ -227,7 +278,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </template>
       </section>
-      <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug debug-endpoint></app-analytics>
+      <paper-fab-menu color="#2196F3" icon="add" position="vertical">
+        <paper-fab-menu-item color="#9C27B0" tooltip="Custom metric" on-tap="addCustomMetric" label="12" ></paper-fab-menu-item>
+        <paper-fab-menu-item color="#2196F3" tooltip="Custom dimension" on-tap="addCustomDimension" icon="timeline" ></paper-fab-menu-item>
+      </paper-fab-menu>
+      <form-action-bar elevation="5">
+        <div id="errorStatus" prefix hidden>Issue found in last hit</div>
+        <paper-button raised disabled$="[[!hitType]]" on-tap="send">Send hit</paper-button>
+      </form-action-bar>
+      <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug debug-endpoint disable-tracking="{{disableTracking}}">
+        <template is="dom-repeat" items="[[customMetrics]]">
+          <app-analytics-custom type="metric" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
+        </template>
+        <template is="dom-repeat" items="[[customDimensions]]">
+          <app-analytics-custom type="dimension" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
+        </template>
+      </app-analytics>
     </div>
   </template>
   <script>
@@ -249,6 +315,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.timingCategory = 'Database initialization';
     app.timingVariable = 'connectionTime';
     app.timingLabel = '';
+    app.hasCustomData = false;
+    app.customMetrics = [];
+    app.customDimensions = [];
     var d = new Date();
     d = d.toISOString();
     d = d.substr(0, d.lastIndexOf('.'));
@@ -288,6 +357,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app._getParamName = (parameter) => {
       return app.$.analytics._paramsMap[parameter] || 'unknown name';
     };
+    app.addCustomMetric = () => {
+      app.hasCustomData = true;
+      app.push('customMetrics', {
+        index: '',
+        value: ''
+      });
+    };
+    app.addCustomDimension = () => {
+      app.hasCustomData = true;
+      app.push('customDimensions', {
+        index: '',
+        value: ''
+      });
+    };
+    app._removeMetric = (e) => {
+      var index = document.querySelector('#metricsList').indexForElement(e.target);
+      app.splice('customMetrics', index, 1);
+      if (!app.customMetrics.length && !app.customDimensions.length) {
+        app.hasCustomData = false;
+      }
+    };
+    app._removeDimension = (e) => {
+      var index = document.querySelector('#dimensionsList').indexForElement(e.target);
+      app.splice('customDimensions', index, 1);
+      if (!app.customMetrics.length && !app.customDimensions.length) {
+        app.hasCustomData = false;
+      }
+    };
     window.addEventListener('app-analytics-hit-debug', (e) => {
       app.push('logs', {
         isHit: true,
@@ -295,6 +392,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
     });
     window.addEventListener('app-analytics-structure-debug', (e) => {
+      if (e.detail.debug && e.detail.debug.hitParsingResult &&
+        e.detail.debug.hitParsingResult[0] && !e.detail.debug.hitParsingResult[0].valid) {
+        document.querySelector('#errorStatus').removeAttribute('hidden');
+        setTimeout(() => {
+          document.querySelector('#errorStatus').setAttribute('hidden', true);
+        }, 3000);
+      }
       app.push('logs', {
         isValidation: true,
         value: e.detail.debug

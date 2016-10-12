@@ -12,8 +12,6 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="chrome-platform-analytics.html">
-
 <!--
 `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
 Simply put this element as a child of the `<app-analytics>` element and all hits sent
@@ -54,7 +52,10 @@ Polymer({
     // Type of custom value. Either metric or dimmension
     type: String,
     // Index of the custom metric. It can be found in Google Analytics admin panel
-    index: Number,
+    index: {
+      type: Number,
+      observer: '_indexObserver'
+    },
     // The value of the metric or dimension. Type of this attribute depends on the `type`.
     value: String,
     // Full name of the metric/dimension.
@@ -68,16 +69,19 @@ Polymer({
     '_customChanged(type,index,value)'
   ],
 
-  detached: function() {
-    if (!this.fullName) {
-      return;
+  _indexObserver: function(index, oldIndex) {
+    if (oldIndex) {
+      this.fire('app-analytics-custom-removed', {
+        index: oldIndex,
+        type: this.type
+      });
     }
-    this.fire('app-analytics-custom-removed', {
-      name: name
-    });
   },
 
   _customChanged: function(type, index, value) {
+    if (!index) {
+      return;
+    }
     var name = '';
     if (type === 'metric') {
       name += 'metric';
@@ -87,7 +91,7 @@ Polymer({
       return;
     }
     name += String(index);
-    this._set('fullName', name);
+    this._setFullName(name);
     this.fire('app-analytics-custom-changed', {
       name: name,
       value: value,
