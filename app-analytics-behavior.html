@@ -54,8 +54,7 @@ the License.
        * void.
        */
       disableTracking: {
-        type: Boolean,
-        value: false
+        type: Boolean
       },
       /**
        * The Client ID for the mearusement protocol.
@@ -386,7 +385,17 @@ the License.
         this._setInited(true);
       }
     },
-
+    /**
+     * Sets custom dimension to be send with the hit.
+     * Set dimension will be used in all hits until `removeCustomDimension()` is called
+     * with the same `index`.
+     *
+     * Custom dimensions can be set in GA admin interface an its index will be displayed there.
+     *
+     * @param {Number} index Index of the custom dimension. Free version of GA allows up to 20
+     * custom dimensions and up to 200 in premium. The index has to be in range 1 - 200.
+     * @param {Strnig} value Value of the custom dimension to set.
+     */
     addCustomDimension: function(index, value) {
       index = Number(index);
       if (index !== index) {
@@ -405,15 +414,30 @@ the License.
         value: value
       });
     },
-
+    /**
+     * Removes from this instance custom dimension for given index.
+     *
+     * @param {Number} index Index of the custom dimension. The index has to be in range 1 - 200.
+     */
     removeCustomDimension: function(index) {
+      index = Number(index);
       var pos = this.customDimensions.findIndex((i) => i.index === index);
       if (pos === -1) {
         return;
       }
       this.splice('customDimensions', pos, 1);
     },
-
+    /**
+     * Sets custom metric to be send with the hit.
+     * Set metric will be used in all hits until `removeCustomMetric()` is called
+     * with the same `index`.
+     *
+     * Custom metrics can be set in GA admin interface an its index will be displayed there.
+     *
+     * @param {Number} index Index of the custom metric. Free version of GA allows up to 20
+     * custom metrics and up to 200 in premium. The index has to be in range 1 - 200.
+     * @param {Strnig} value Value of the custom metric to set.
+     */
     addCustomMetric: function(index, value) {
       index = Number(index);
       if (index !== index) {
@@ -432,8 +456,13 @@ the License.
         value: value
       });
     },
-
+    /**
+     * Removes from this instance custom metric for given index.
+     *
+     * @param {Number} index Index of the custom metric. The index has to be in range 1 - 200.
+     */
     removeCustomMetric: function(index) {
+      index = Number(index);
       var pos = this.customMetrics.findIndex((i) => i.index === index);
       if (pos === -1) {
         return;
@@ -446,6 +475,9 @@ the License.
      * @param {String} name Screen name.
      */
     sendScreen: function(name) {
+      if (this.disableTracking) {
+        return;
+      }
       this.sendHit('screenview', {
         cd: name
       });
@@ -459,6 +491,9 @@ the License.
      * @param {Number?} value Specifies the event value. Values must be non-negative. Optional.
      */
     sendEvent: function(category, action, label, value) {
+      if (this.disableTracking) {
+        return;
+      }
       var missing = [];
       if (!category) {
         missing.push('category');
@@ -488,6 +523,9 @@ the License.
      * @param {Boolean} fatal Specifies whether the exception was fatal.
      */
     sendException: function(description, fatal) {
+      if (this.disableTracking) {
+        return;
+      }
       fatal = fatal ? '1' : '0';
       this.sendHit('exception', {
         exd: description,
@@ -504,6 +542,9 @@ the License.
      * typically a URL but can be any text.
      */
     sendSocial: function(network, action, target) {
+      if (this.disableTracking) {
+        return;
+      }
       var missing = [];
       if (!network) {
         missing.push('network');
@@ -533,6 +574,9 @@ the License.
      * @param {String} label Specifies the user timing label.
      */
     sendTimings: function(category, variable, time, label) {
+      if (this.disableTracking) {
+        return;
+      }
       var missing = [];
       if (!category) {
         missing.push('category');
@@ -565,6 +609,9 @@ the License.
      * @param {Array<String,String>} map of params to send wit this hit.
      */
     sendHit: function(type, params) {
+      if (this.disableTracking) {
+        return;
+      }
       if (['pageview', 'screenview', 'event', 'transaction', 'item', 'social', 'exception',
         'timing'].indexOf(type) === -1) {
         throw new Error('Unknown hit type.');
@@ -575,10 +622,10 @@ the License.
       var body = this._createBody(post);
       if (this.debug) {
         console.group('Running command for ', type);
-        this.printParamsTable(post);
+        this._printParamsTable(post);
         console.groupEnd();
       }
-      this.transport(body);
+      this._transport(body);
     },
 
     _processParams: function(params) {
@@ -668,7 +715,7 @@ the License.
       this._setBaseParams(data);
     },
 
-    printParamsTable: function(list) {
+    _printParamsTable: function(list) {
       var map = {};
       var debugList = [];
       for (let param in list) {
@@ -690,6 +737,49 @@ the License.
       });
     },
 
+    _printFromBulk: function(body) {
+      body = body.split('\n');
+      if (!body.length) {
+        return;
+      }
+      var innserSplit = (pair) => {
+        pair = pair.split('=');
+        return pair;
+      };
+
+      console.group('Running bulk insert');
+
+      body.forEach((i) => {
+        let debugList = [];
+        let map = {};
+
+        let parts = i.split('&');
+        let params = parts.map(innserSplit);
+
+        for (let i = 0, len = params.length; i < len; i++) {
+          let param = params[i][0];
+          let name = this._paramsMap[param] || param;
+          let value = decodeURIComponent(params[i][1]);
+          map[param] = {
+            value: value,
+            name: name
+          };
+          debugList.push({
+            param: param,
+            value: value,
+            name: name
+          });
+        }
+
+        console.table(map, ['name', 'value']);
+        this.fire('app-analytics-hit-debug', {
+          debug: debugList
+        });
+
+      });
+      console.groupEnd();
+    },
+
     /**
      * This method sends GA data in bulk.
      *
@@ -706,7 +796,10 @@ the License.
      *
      * @param {Array} list Array of hits that waren't sent earier.
      */
-    sendBulk: function(list) {
+    _sendBulk: function(list) {
+      if (this.disableTracking) {
+        return Promise.resolve();
+      }
       var now = Date.now();
       // Append delat argument.
       var body = list.map((item, i) => {
@@ -716,14 +809,21 @@ the License.
         let delta = now - item.time;
         let body = item.body;
         body += '&qt=' + delta;
+        return body;
       });
       body = body.join('\n');
+      if (this.debug) {
+        this._printFromBulk(body);
+      }
 
-      console.log('Batch body', body);
-      throw 'aaaaa';
+      return this._transport(body, true).then(() => list);
     },
 
-    transport: function(body) {
+    _transport: function(body, offline) {
+      if (this.disableTracking) {
+        return Promise.resolve();
+      }
+      offline = offline || false;
       if (!navigator.onLine) {
         this._storeOffline(body);
         return;
@@ -737,9 +837,16 @@ the License.
         url += '/debug';
       }
       url += '/collect';
-      fetch(url, init).then((response) => {
+      if (this.useCacheBooster) {
+        url += '?z=' + Date.now();
+      }
+      return fetch(url, init).then((response) => {
         if (response.status !== 200) {
-          this._storeOffline(body);
+          if (!offline) {
+            this._storeOffline(body);
+          } else {
+            throw new Error('Unable send data.');
+          }
         }
         if (this.debugEndpoint) {
           return response.json().then((result) => {
@@ -749,14 +856,22 @@ the License.
           });
         }
       }).catch(() => {
-        if (!navigator.onLine) {
+        if (!navigator.onLine && !offline) {
           this._storeOffline(body);
           return;
         }
+        throw new Error('Unable to send data');
       });
     },
     // Should be implemented by element that tmplements this behavior.
-    _storeOffline: function() {}
+    _storeOffline: function() {},
+
+    __printError: function(e) {
+      var msg = 'The <app-analytics> element encountered a problem. ';
+      msg += 'Please, repor an isse at ';
+      msg += 'https://github.com/advanced-rest-client/app-analytics/issues';
+      console.info(msg, e);
+    }
   };
 })();
 </script>
