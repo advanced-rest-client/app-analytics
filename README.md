@@ -7,6 +7,167 @@
 <app-analytics tracking-id="UA-XXXXXXX-Y"></app-analytics>
 ```
 
+This element initalize its own database where config data will be stored
+(cid parameter, information if analitics has been disabled).
+
+If `clientId` attribute is not set it will be generated automatically. There's no need to set
+it manually if there's no need.
+
+__Google Analytics do not allow sending any information that may lead to a user__
+
+Always give the user ability to disable tracking. In EU you have to have a permission from
+the user to store data on his computer. The `app-database`'s default config is to permit
+tracking. Disable it by calling a function on the element:
+```
+document.querySelector('app-analytics').setTrackingPermitted(false);
+```
+setting up attribute:
+```
+<app-analytics tracking-id="UA-XXXXXXX-Y" disable-tracking></app-analytics>
+```
+or fire custom event:
+```
+// inside Polymer element:
+this.fire('app-analytics-permitted', {
+  permitted: false
+});
+// or in JavaScript
+var event = new CustomEvent('app-analytics-permitted', {
+  detail: {
+    permitted: false,
+    bubbles: true
+  }
+});
+document.dispatchEvent(event);
+```
+
+### Using `<app-analytics>`
+
+You can directly call one of `send*()` functions. See API Reference below for more info.
+- <a href="#method-sendEvent">sendEvent</a>
+- <a href="#method-sendException">sendException</a>
+- <a href="#method-sendScreen">sendScreen</a>
+- <a href="#method-sendSocial">sendSocial</a>
+- <a href="#method-sendTimings">sendTimings</a>
+
+You can also use event system to send a hit. In this case fire a `send-analytics` event
+with required `type` property on the `detail` object which describes what king of hit
+should be send. Possible values are: `pageview`, `screenview`, `event`, `social`,
+`exception` or `timing`.
+
+Other parameters depends on the type.
+
+#### Sending `screenview` hit
+```
+// Inside Polymer element:
+this.fire('send-analytics', {
+  type: 'screenview',
+  name: 'Some scree name' //required.
+});
+// or in JavaScript:
+var event = new CustomEvent('send-analytics', {
+  detail: {
+    type: 'screenview',
+    name: 'Some scree name' //required.
+    bubbles: true
+  }
+});
+document.dispatchEvent(event);
+```
+
+#### Sending `event` hit
+```
+// Inside Polymer element:
+this.fire('send-analytics', {
+  type: 'event',
+  category: 'Some category', //required.
+  action: 'Some action', //required.
+  label: 'Some label',
+  value: 123
+});
+// or in JavaScript:
+var event = new CustomEvent('send-analytics', {
+  detail: {
+    type: 'event',
+    category: 'Some category', //required.
+    action: 'Some action', //required.
+    label: 'Some label',
+    value: 123,
+    bubbles: true
+  }
+});
+document.dispatchEvent(event);
+```
+#### Sending `exception` hit
+```
+// Inside Polymer element:
+this.fire('send-analytics', {
+  type: 'exception',
+  description: 'Exception description', // required.
+  fatal: true // default false
+});
+// or in JavaScript:
+var event = new CustomEvent('send-analytics', {
+  detail: {
+    type: 'exception',
+    description: 'Exception description', // required.
+    fatal: true, // default false
+    bubbles: true
+  }
+});
+document.dispatchEvent(event);
+```
+#### Sending `social` hit
+```
+// Inside Polymer element:
+this.fire('send-analytics', {
+  type: 'social',
+  network: 'Google +', // required.
+  action: 'Share', // required
+  target: 'https://www.shared.com/resource' // required
+});
+// or in JavaScript:
+var event = new CustomEvent('send-analytics', {
+  detail: {
+    type: 'social',
+    network: 'Google +', // required.
+    action: 'Share', // required
+    target: 'https://www.shared.com/resource', // required
+    bubbles: true
+  }
+});
+document.dispatchEvent(event);
+```
+#### Sending `timing` hit
+```
+// Inside Polymer element:
+this.fire('send-analytics', {
+  type: 'timing',
+  category: 'Bootstrap', // required.
+  variable: 'databaseInitTime', // required
+  value: 123, // required
+  label: 'Optional label'
+});
+// or in JavaScript:
+var event = new CustomEvent('send-analytics', {
+  detail: {
+    type: 'timing',
+    category: 'Bootstrap', // required.
+    variable: 'databaseInitTime', // required
+    value: 123, // required
+    label: 'Optional label',
+    bubbles: true
+  }
+});
+document.dispatchEvent(event);
+```
+
+## Browsers compatibility
+This element uses ES 6 features (arrow functions, fetch API).
+It will not work in IE, Safari, iOS safari, Opera mini.
+It will work for Edge 14.
+It should work in other browsers.
+
 
 
 ### Events
