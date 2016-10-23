@@ -758,7 +758,9 @@ the License.
           data['cd' + cd.index] = encodeURIComponent(cd.value);
         });
       }
-
+      if (this.debug) {
+        console.info('[GA] Configuring base object', data);
+      }
       this._setBaseParams(data);
     },
 

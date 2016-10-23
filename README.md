@@ -4,8 +4,14 @@
 
 ### Example
 ```
-<app-analytics tracking-id="UA-XXXXXXX-Y"></app-analytics>
+<app-analytics
+  tracking-id="UA-XXXXXXX-Y"
+  app-name="my app"
+  app-version="1.0.0"
+  data-source="app-analytics element"></app-analytics>
 ```
+
+The `app-name` and `tracking-id` are required parameters in order to run the element properly.
 
 This element initalize its own database where config data will be stored
 (cid parameter, information if analitics has been disabled).
