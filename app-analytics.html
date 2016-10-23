@@ -188,6 +188,37 @@ It will not work in IE, Safari, iOS safari, Opera mini.
 It will work for Edge 14.
 It should work in other browsers.
 
+
+## Custom metrics and dimensions
+Use `<app-analytics-custom>` element as a child of `<app-analytics>` to set custom properties.
+This metrics / dimensions will be used with every hit as long as this elements exists as a
+children of the `<app-analytics>` element.
+
+### Example
+```
+<app-analytics tracking-id="UA-XXXXXXX">
+  <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+</app-analytics>
+```
+
+To send custom data with single hit only without creating `<app-analytics-custom>` children,
+add `customDimensions` or `customMetrics` to the event detail object. Both objects must be
+an array of custom definition objects that includs index and value.
+
+### Example
+```
+this.fire('send-analytics', {
+  'type': 'event',
+  'category': 'Engagement',
+  'action': 'Click',
+  'label': 'Movie start',
+  'customDimensions': [{
+    index: 1, // index of the custom dimension
+    value: 'Author name' // Value of the custom dimension
+  }]
+});
+```
+
 @group Logic Elements
 @element app-analytics
 @demo demo/index.html
@@ -394,26 +425,33 @@ It should work in other browsers.
       }
 
       var d = e.detail;
+      var opts = {};
+      if (d.customDimensions) {
+        opts.customDimensions = d.customDimensions;
+      }
+      if (d.customMetrics) {
+        opts.customMetrics = d.customMetrics;
+      }
       switch (d.type) {
         case 'screenview':
-          this.sendScreen(d.name);
+          this.sendScreen(d.name, opts);
           e.detail.sent = true;
           break;
         case 'event':
-          this.sendEvent(d.category, d.action, d.label, d.value);
+          this.sendEvent(d.category, d.action, d.label, d.value, opts);
           e.detail.sent = true;
           break;
         case 'exception':
-          this.sendException(d.description, d.fatal);
+          this.sendException(d.description, d.fatal, opts);
           e.detail.sent = true;
           break;
         case 'social':
-          this.sendSocial(d.network, d.action, d.target);
+          this.sendSocial(d.network, d.action, d.target, opts);
           e.detail.sent = true;
           break;
         case 'timing':
           try {
-            this.sendTimings(d.category, d.variable, d.value, d.label);
+            this.sendTimings(d.category, d.variable, d.value, d.label, opts);
             e.detail.sent = true;
           } catch (e) {
             e.detail.sent = false;
