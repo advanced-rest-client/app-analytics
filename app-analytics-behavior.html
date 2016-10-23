@@ -474,13 +474,15 @@ the License.
      *
      * @param {String} name Screen name.
      */
-    sendScreen: function(name) {
+    sendScreen: function(name, opts) {
       if (this.disableTracking) {
         return;
       }
-      this.sendHit('screenview', {
+      var data = {
         cd: name
-      });
+      };
+      this.appendCustomData(data, opts);
+      this.sendHit('screenview', data);
     },
     /**
      * Sends event tracking.
@@ -490,7 +492,7 @@ the License.
      * @param {String?} label Specifies the event label. Optional value.
      * @param {Number?} value Specifies the event value. Values must be non-negative. Optional.
      */
-    sendEvent: function(category, action, label, value) {
+    sendEvent: function(category, action, label, value, opts) {
       if (this.disableTracking) {
         return;
       }
@@ -504,16 +506,17 @@ the License.
       if (missing.length) {
         throw new Error('Missing required parameters: ' + missing.join(', '));
       }
-      var opts = {
+      var data = {
         ec: category,
         ea: action
       };
       if (label) {
-        opts.el = label;
+        data.el = label;
       }
       if (value) {
-        opts.ev = value;
+        data.ev = value;
       }
+      this.appendCustomData(data, opts);
       this.sendHit('event', opts);
     },
     /**
@@ -522,15 +525,17 @@ the License.
      * @param {String} description A description of the exception.
      * @param {Boolean} fatal Specifies whether the exception was fatal.
      */
-    sendException: function(description, fatal) {
+    sendException: function(description, fatal, opts) {
       if (this.disableTracking) {
         return;
       }
       fatal = fatal ? '1' : '0';
-      this.sendHit('exception', {
+      var data = {
         exd: description,
         exf: fatal
-      });
+      };
+      this.appendCustomData(data, opts);
+      this.sendHit('exception', data);
     },
     /**
      * Track social interaction
@@ -541,7 +546,7 @@ the License.
      * @param {String} target Specifies the target of a social interaction. This value is
      * typically a URL but can be any text.
      */
-    sendSocial: function(network, action, target) {
+    sendSocial: function(network, action, target, opts) {
       if (this.disableTracking) {
         return;
       }
@@ -558,11 +563,13 @@ the License.
       if (missing.length) {
         throw new Error('Missing required parameters: ' + missing.join(', '));
       }
-      this.sendHit('social', {
+      var data = {
         sn: network,
         sa: action,
         st: target
-      });
+      };
+      this.appendCustomData(data, opts);
+      this.sendHit('social', data);
     },
     /**
      * Track timings in the app.
@@ -573,7 +580,7 @@ the License.
      * **required**
      * @param {String} label Specifies the user timing label.
      */
-    sendTimings: function(category, variable, time, label) {
+    sendTimings: function(category, variable, time, label, cmOpts) {
       if (this.disableTracking) {
         return;
       }
@@ -598,7 +605,27 @@ the License.
       if (label) {
         opts.utl = label;
       }
+      this.appendCustomData(opts, cmOpts);
       this.sendHit('timing', opts);
+    },
+    /**
+     * Append custom metrics / dimensions definitions to the
+     * parameters list.
+     */
+    appendCustomData: function(data, opts) {
+      if (!opts) {
+        return;
+      }
+      if (opts.customDimensions && opts.customDimensions.length) {
+        opts.customDimensions.forEach((item) => {
+          data['cd' + item.index] = encodeURIComponent(item.value);
+        });
+      }
+      if (opts.customMetrics && opts.customMetrics.length) {
+        opts.customMetrics.forEach((item) => {
+          data['cm' + item.index] = encodeURIComponent(item.value);
+        });
+      }
     },
     /**
      * Send a hit to the GA server.

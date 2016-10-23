@@ -394,26 +394,33 @@ It should work in other browsers.
       }
 
       var d = e.detail;
+      var opts = {};
+      if (d.customDimensions) {
+        opts.customDimensions = d.customDimensions;
+      }
+      if (d.customMetrics) {
+        opts.customMetrics = d.customMetrics;
+      }
       switch (d.type) {
         case 'screenview':
-          this.sendScreen(d.name);
+          this.sendScreen(d.name, opts);
           e.detail.sent = true;
           break;
         case 'event':
-          this.sendEvent(d.category, d.action, d.label, d.value);
+          this.sendEvent(d.category, d.action, d.label, d.value, opts);
           e.detail.sent = true;
           break;
         case 'exception':
-          this.sendException(d.description, d.fatal);
+          this.sendException(d.description, d.fatal, opts);
           e.detail.sent = true;
           break;
         case 'social':
-          this.sendSocial(d.network, d.action, d.target);
+          this.sendSocial(d.network, d.action, d.target, opts);
           e.detail.sent = true;
           break;
         case 'timing':
           try {
-            this.sendTimings(d.category, d.variable, d.value, d.label);
+            this.sendTimings(d.category, d.variable, d.value, d.label, opts);
             e.detail.sent = true;
           } catch (e) {
             e.detail.sent = false;
