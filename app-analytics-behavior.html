@@ -473,6 +473,10 @@ the License.
      * Sends the screenview hit to the GA.
      *
      * @param {String} name Screen name.
+     * @param {Object} opts Custom data definition. It should be an object that may contain two
+     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * contain `index` property - representing custom data index in GA - and `value` property -
+     * representing value of the property.
      */
     sendScreen: function(name, opts) {
       if (this.disableTracking) {
@@ -491,6 +495,10 @@ the License.
      * @param {String} action Specifies the event action. Must not be empty.
      * @param {String?} label Specifies the event label. Optional value.
      * @param {Number?} value Specifies the event value. Values must be non-negative. Optional.
+     * @param {Object} opts Custom data definition. It should be an object that may contain two
+     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * contain `index` property - representing custom data index in GA - and `value` property -
+     * representing value of the property.
      */
     sendEvent: function(category, action, label, value, opts) {
       if (this.disableTracking) {
@@ -524,6 +532,10 @@ the License.
      *
      * @param {String} description A description of the exception.
      * @param {Boolean} fatal Specifies whether the exception was fatal.
+     * @param {Object} opts Custom data definition. It should be an object that may contain two
+     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * contain `index` property - representing custom data index in GA - and `value` property -
+     * representing value of the property.
      */
     sendException: function(description, fatal, opts) {
       if (this.disableTracking) {
@@ -545,6 +557,10 @@ the License.
      * when a user clicks the +1 button, the social action is 'plus'.
      * @param {String} target Specifies the target of a social interaction. This value is
      * typically a URL but can be any text.
+     * @param {Object} opts Custom data definition. It should be an object that may contain two
+     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * contain `index` property - representing custom data index in GA - and `value` property -
+     * representing value of the property.
      */
     sendSocial: function(network, action, target, opts) {
       if (this.disableTracking) {
@@ -579,6 +595,10 @@ the License.
      * @param {Number} time Specifies the user timing value. The value is in milliseconds.
      * **required**
      * @param {String} label Specifies the user timing label.
+     * @param {Object} opts Custom data definition. It should be an object that may contain two
+     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * contain `index` property - representing custom data index in GA - and `value` property -
+     * representing value of the property.
      */
     sendTimings: function(category, variable, time, label, cmOpts) {
       if (this.disableTracking) {

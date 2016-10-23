@@ -188,6 +188,37 @@ It will not work in IE, Safari, iOS safari, Opera mini.
 It will work for Edge 14.
 It should work in other browsers.
 
+
+## Custom metrics and dimensions
+Use `<app-analytics-custom>` element as a child of `<app-analytics>` to set custom properties.
+This metrics / dimensions will be used with every hit as long as this elements exists as a
+children of the `<app-analytics>` element.
+
+### Example
+```
+<app-analytics tracking-id="UA-XXXXXXX">
+  <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+</app-analytics>
+```
+
+To send custom data with single hit only without creating `<app-analytics-custom>` children,
+add `customDimensions` or `customMetrics` to the event detail object. Both objects must be
+an array of custom definition objects that includs index and value.
+
+### Example
+```
+this.fire('send-analytics', {
+  'type': 'event',
+  'category': 'Engagement',
+  'action': 'Click',
+  'label': 'Movie start',
+  'customDimensions': [{
+    index: 1, // index of the custom dimension
+    value: 'Author name' // Value of the custom dimension
+  }]
+});
+```
+
 @group Logic Elements
 @element app-analytics
 @demo demo/index.html
