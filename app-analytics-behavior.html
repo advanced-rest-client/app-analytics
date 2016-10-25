@@ -525,7 +525,7 @@ the License.
         data.ev = value;
       }
       this.appendCustomData(data, opts);
-      this.sendHit('event', opts);
+      this.sendHit('event', data);
     },
     /**
      * Sends the exception hit to GA.
