@@ -69,6 +69,11 @@ Polymer({
     '_customChanged(type,index,value)'
   ],
 
+  attached: function() {
+    // _customChanged could work before the element was attached to DOM.
+    this._customChanged(this.type, this.index, this.value);
+  },
+
   _indexObserver: function(index, oldIndex) {
     if (oldIndex) {
       this.fire('app-analytics-custom-removed', {
