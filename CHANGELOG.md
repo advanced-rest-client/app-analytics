@@ -1,3 +1,22 @@
+<a name="1.0.10"></a>
+## [1.0.10](https://github.com/advanced-rest-client/app-analytics/compare/1.0.5...v1.0.10) (2016-10-29)
+
+
+### Docs
+
+* updated demo page ([56d6ae41785bd8f54c18ce6fe231976a53e25b9f](https://github.com/advanced-rest-client/app-analytics/commit/56d6ae41785bd8f54c18ce6fe231976a53e25b9f))
+
+### Fix
+
+* Added type checking when trying to access properties in strict mode ([a76e0dec0bbfe91a623df7183d37653874e7b8a5](https://github.com/advanced-rest-client/app-analytics/commit/a76e0dec0bbfe91a623df7183d37653874e7b8a5))
+* Fixing parameters assignment ([913813f0db4107ab9b79a95d2797e0a94d5d8563](https://github.com/advanced-rest-client/app-analytics/commit/913813f0db4107ab9b79a95d2797e0a94d5d8563))
+
+### Update
+
+* Added content type header for the request ([ce6ba42bf0ff1aadf6e3c74d029fe981cdf1fc06](https://github.com/advanced-rest-client/app-analytics/commit/ce6ba42bf0ff1aadf6e3c74d029fe981cdf1fc06))
+
+
+
 <a name="1.0.9"></a>
 ## [1.0.9](https://github.com/advanced-rest-client/app-analytics/compare/1.0.5...v1.0.9) (2016-10-29)
 
