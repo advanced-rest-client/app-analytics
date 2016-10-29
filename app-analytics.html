@@ -397,7 +397,8 @@ this.fire('send-analytics', {
 
     _disableTrackingChanged: function(disableTracking) {
       if (disableTracking === true || disableTracking === false) {
-        if (this._metaData.disableTracking !== disableTracking) {
+        if (this._metaData && typeof this._metaData.disableTracking !== 'undefined' &&
+          this._metaData.disableTracking !== disableTracking) {
           this.set('_metaData.disableTracking', disableTracking);
           this.$.metaStore.save();
         }
