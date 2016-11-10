@@ -345,15 +345,16 @@ this.fire('send-analytics', {
       if (!nodes || !nodes.length) {
         return;
       }
-      nodes.forEach((i) => {
+      var self = this;
+      nodes.forEach(function(i) {
         if (i.nodeName !== 'APP-ANALYTICS-CUSTOM') {
           return;
         }
         if (i.index && i.type) {
           if (i.type === 'dimension') {
-            this.removeCustomDimension(i.index);
+            self.removeCustomDimension(i.index);
           } else if (i.type === 'metric') {
-            this.removeCustomMetric(i.index);
+            self.removeCustomMetric(i.index);
           }
         }
       });
@@ -387,18 +388,19 @@ this.fire('send-analytics', {
           meta.cid = uuid;
         }
       }
-      if (this.clientId !== meta.cid) {
-        this.set('clientId', meta.cid);
-      }
       if (meta.disableTracking !== this.disableTracking) {
         this.set('disableTracking', Boolean(meta.disableTracking));
+      }
+      if (this.clientId !== meta.cid) {
+        this.set('clientId', meta.cid);
       }
     },
 
     _disableTrackingChanged: function(disableTracking) {
       if (disableTracking === true || disableTracking === false) {
-        if (this._metaData && typeof this._metaData.disableTracking !== 'undefined' &&
-          this._metaData.disableTracking !== disableTracking) {
+        if (this._metaData &&
+          this._metaData.disableTracking !== disableTracking &&
+          this._metaData._rev && this._metaData._id) {
           this.set('_metaData.disableTracking', disableTracking);
           this.$.metaStore.save();
         }
@@ -500,6 +502,10 @@ this.fire('send-analytics', {
      * TODO: What if the element won't initialize? Is it should be lost?
      */
     _processQueue: function() {
+      if (this.disableTracking) {
+        this._queue = [];
+        return;
+      }
       var len = this._queue.length;
       if (len) {
         for (let i = 0; i < len; i++) {
@@ -546,7 +552,10 @@ this.fire('send-analytics', {
         time: Date.now(),
         body: data,
         sent: false
-      }).catch((e) => this.__printError(e));
+      })
+      .catch(function(e) {
+        this.__printError(e);
+      }.bind(this));
     },
 
     /**
@@ -562,21 +571,26 @@ this.fire('send-analytics', {
         // jscs:disable
         include_docs: true
         // jscs:enable
-      }).then((result) => {
+      })
+      .then(function(result) {
         if (!result.rows || !result.rows.length) {
           return [];
         }
-        return result.rows.filter((i) => {
+        return result.rows.filter(function(i) {
           var id = i.doc._id;
           if (id[0] === '_' || id === 'metadata') {
             return false;
           }
           return true;
         });
-      }).then((result) => {
-        result = result.map((i) => i.doc);
+      })
+      .then(function(result) {
+        result = result.map(function(i) { return i.doc; });
         this.set('_offlineResult', result);
-      }).catch((e) => this.__printError(e));
+      }.bind(this))
+      .catch(function(e) {
+        this.__printError(e);
+      }.bind(this));
     },
 
     /**
@@ -607,17 +621,21 @@ this.fire('send-analytics', {
       if (!list.length) {
         return;
       }
-      let promises = list.map((item) => {
-        return this.$.index.db.get(item._id);
+      var self = this;
+      let promises = list.map(function(item) {
+        return self.$.index.db.get(item._id);
       });
-      Promise.all(promises).then((list) => {
-        return this._sendBulk(list);
+      Promise.all(promises).then(function(list) {
+        return self._sendBulk(list);
       })
-      .then((list) => {
-        let promises = list.map((i) => this.$.index.db.remove(i));
-        return Promise.all(promises).then(() => this.__checkOfflineUpload(this.isOnline));
+      .then(function(list) {
+        let promises = list.map(function(i) { return self.$.index.db.remove(i); });
+        return Promise.all(promises)
+        .then(function() {return self.__checkOfflineUpload(self.isOnline); });
       })
-      .catch((e) => this.__printError(e));
+      .catch(function(e) {
+        self.__printError(e);
+      });
     }
   });
   </script>
