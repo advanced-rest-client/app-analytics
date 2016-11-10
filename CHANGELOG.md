@@ -1,3 +1,13 @@
+<a name="1.0.11"></a>
+## [1.0.11](https://github.com/advanced-rest-client/app-analytics/compare/1.0.10...v1.0.11) (2016-11-10)
+
+
+### Fix
+
+* Fixed issue #1. Also refactored code to not use ES6 function. Added polyfil to find index function ([a1980f6378f14f657d3a0e871862b2d4e56650c9](https://github.com/advanced-rest-client/app-analytics/commit/a1980f6378f14f657d3a0e871862b2d4e56650c9)), closes [#1](https://github.com/advanced-rest-client/app-analytics/issues/1)
+
+
+
 <a name="1.0.10"></a>
 ## [1.0.10](https://github.com/advanced-rest-client/app-analytics/compare/1.0.5...v1.0.10) (2016-10-29)
 

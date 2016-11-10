@@ -327,8 +327,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     d = d.substr(0, d.lastIndexOf('.'));
     app.timingTime = d;
     app.logs = [];
-    app.send = () => {
-      let detail = {
+    app.send = function() {
+      var detail = {
         type: app.hitType
       };
       switch (app.hitType) {
@@ -358,48 +358,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       app.fire('send-analytics', detail);
     };
-    app._getParamName = (parameter) => {
+    app._getParamName = function(parameter) {
       return app.$.analytics._paramsMap[parameter] || 'unknown name';
     };
-    app.addCustomMetric = () => {
+    app.addCustomMetric = function() {
       app.hasCustomData = true;
       app.push('customMetrics', {
         index: '',
         value: ''
       });
     };
-    app.addCustomDimension = () => {
+    app.addCustomDimension = function() {
       app.hasCustomData = true;
       app.push('customDimensions', {
         index: '',
         value: ''
       });
     };
-    app._removeMetric = (e) => {
+    app._removeMetric = function(e) {
       var index = document.querySelector('#metricsList').indexForElement(e.target);
       app.splice('customMetrics', index, 1);
       if (!app.customMetrics.length && !app.customDimensions.length) {
         app.hasCustomData = false;
       }
     };
-    app._removeDimension = (e) => {
+    app._removeDimension = function(e) {
       var index = document.querySelector('#dimensionsList').indexForElement(e.target);
       app.splice('customDimensions', index, 1);
       if (!app.customMetrics.length && !app.customDimensions.length) {
         app.hasCustomData = false;
       }
     };
-    window.addEventListener('app-analytics-hit-debug', (e) => {
+    window.addEventListener('app-analytics-hit-debug', function(e) {
       app.push('logs', {
         isHit: true,
         value: e.detail.debug
       });
     });
-    window.addEventListener('app-analytics-structure-debug', (e) => {
+    window.addEventListener('app-analytics-structure-debug', function(e) {
       if (e.detail.debug && e.detail.debug.hitParsingResult &&
         e.detail.debug.hitParsingResult[0] && !e.detail.debug.hitParsingResult[0].valid) {
         document.querySelector('#errorStatus').removeAttribute('hidden');
-        setTimeout(() => {
+        setTimeout(function() {
           document.querySelector('#errorStatus').setAttribute('hidden', true);
         }, 3000);
       }
@@ -408,6 +408,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         value: e.detail.debug
       });
     });
+    window.addEventListener('WebComponentsReady', function(e) {
+
+    });
+    var detail = {
+      type: 'screenview',
+      name: 'Init'
+    };
+    app.fire('send-analytics', detail);
   })(document.querySelector('#app'));
   </script>
 </body>
