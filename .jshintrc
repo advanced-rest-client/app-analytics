@@ -1,5 +1,5 @@
 {
-  "esnext": true,
+  "esnext": false,
   "node": true,
   "browser": true,
   "bitwise": false,
@@ -16,6 +16,7 @@
   "newcap": false,
   "globals": {
     "Polymer": true,
-    "ArcBehaviors": true
+    "ArcBehaviors": true,
+    "Promise": true
   }
 }

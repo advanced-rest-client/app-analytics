@@ -1,3 +1,16 @@
+<a name="1.0.12"></a>
+## [1.0.12](https://github.com/advanced-rest-client/app-analytics/compare/1.0.11...v1.0.12) (2016-11-20)
+
+
+### Update
+
+* Changed method how the element initialize variables ([824ba1c9305c6a030ff820332c100d322e2eb7d6](https://github.com/advanced-rest-client/app-analytics/commit/824ba1c9305c6a030ff820332c100d322e2eb7d6))
+* disabled ES6 comability mode ([3597d506ef1f68cf7a7dbe2c18769572e00d239f](https://github.com/advanced-rest-client/app-analytics/commit/3597d506ef1f68cf7a7dbe2c18769572e00d239f))
+* Removed gulp tasks ([c3cb02e9f56f621e5ea5ae935f2d7c2b48b95080](https://github.com/advanced-rest-client/app-analytics/commit/c3cb02e9f56f621e5ea5ae935f2d7c2b48b95080))
+* testing disableTracking property ([9c48b98e521ddd7aff7fd7d0d7fa00decd691359](https://github.com/advanced-rest-client/app-analytics/commit/9c48b98e521ddd7aff7fd7d0d7fa00decd691359))
+
+
+
 <a name="1.0.11"></a>
 ## [1.0.11](https://github.com/advanced-rest-client/app-analytics/compare/1.0.10...v1.0.11) (2016-11-10)
 

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/advanced-rest-client/app-analytics.svg?branch=master)](https://travis-ci.org/advanced-rest-client/app-analytics)  [![Dependency Status](https://dependencyci.com/github/advanced-rest-client/app-analytics/badge)](https://dependencyci.com/github/advanced-rest-client/app-analytics)  
+
 # app-analytics
 
 `<app-analytics>` An element that support Google Analytics analysis
@@ -212,6 +214,7 @@ this.fire('send-analytics', {
 | --- | --- | --- |
 | app-analytics-permitted-changed | Firwed when Library `permitted` state changed. | permitted **Boolean** - Current state. |
 | app-analytics-ready | An event fired when the Google Analytics configuration is set and ready to rock. It doesn't matter if tracking is permitted. The tracking object will be ready to enable tracking on user demand. | trackingId **String** - A tracking ID related to this configuration. |
+| app-analytics-structure-debug | Fired when `debugEndpoint` is set to `true`. Contains a validation result from the GA server. The result is in following format: ```javascript {   "hitParsingResult": [{     "valid": false,     "hit": "GET /debug/collect?tid=fake\u0026v=1 HTTP/1.1",     "parserMessage": [{       "messageType": "ERROR",       "description": "The value provided for parameter ...",       "parameter": "tid"     }, {       "messageType": "ERROR",       "description": "Tracking Id is a required field ...",       "parameter": "tid"     }]   }] } ``` | debug **Object** - A validation result from the GA server. |
 # app-analytics-custom
 
 `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.

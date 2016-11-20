@@ -25,16 +25,129 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <test-fixture id="basic">
       <template>
-        <app-analytics></app-analytics>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics element"></app-analytics>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="disabled">
+      <template>
+        <app-analytics disable-tracking tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics element"></app-analytics>
       </template>
     </test-fixture>
 
     <script>
-    /* global suite, test, fixture, assert */
+    // jscs:disable
+    /* jshint ignore:start */
     suite('basic', function() {
-      test('`app-analytics` should be initialized', function() {
-        var element = fixture('basic');
-        assert.equal(element.isAttached, true, 'element.isAttached equals true');
+      var element;
+      var cids = [];
+
+      suiteSetup(function(done) {
+        var db = new PouchDB('analytics-meta');
+        db.destroy().then(function (response) {
+          done();
+        }).catch(function (err) {
+          done(err);
+        });
+      });
+
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Initialize the cid', function(done) {
+        element.addEventListener('app-analytics-ready', function() {
+          cids.push(element.clientId);
+          // saving nevly generated meta may take a few milliseconds...
+          // Otherwise next test will generate new CID.
+          setTimeout(function() {
+            done();
+          }, 100);
+        });
+      });
+
+      test('Enabled by default', function(done) {
+        element.addEventListener('app-analytics-ready', function() {
+          assert.equal(element.disableTracking, false);
+          cids.push(element.clientId);
+          done();
+        });
+      });
+
+      test('Disable tracking', function(done) {
+        element.disableTracking = true;
+        element.addEventListener('app-analytics-ready', function() {
+          assert.equal(element.disableTracking, true);
+          cids.push(element.clientId);
+          done();
+        });
+      });
+
+      test('Disabled won\'t send hit', function(done) {
+        element.addEventListener('app-analytics-ready', function() {
+          // disabled in previous test, it test persistancy
+          element.sendHit('screenview', {
+            cd: name
+          })
+          .then((result) => {
+            expect(result).to.exist;
+            expect(result.disabled).to.equal(true);
+          });
+
+          cids.push(element.clientId);
+          done();
+        });
+      });
+
+      test('Enable tracking', function(done) {
+        element.disableTracking = false;
+        element.addEventListener('app-analytics-ready', function() {
+          assert.equal(element.disableTracking, false);
+          cids.push(element.clientId);
+          done();
+        });
+      });
+
+      // Put this at the end of suite.
+      test('Cid hasn\'t changed', function(done) {
+        element.addEventListener('app-analytics-ready', function() {
+          cids.push(element.clientId);
+          var _cid;
+          expect(cids).to.be.not.empty;
+          cids.forEach(function(cid) {
+            expect(cid).to.be.not.empty;
+            if (!_cid) {
+              _cid = cid;
+            } else {
+              expect(_cid).to.equal(cid);
+            }
+          });
+          done();
+        });
+      });
+    });
+
+    suite('disbaled', function() {
+      var element;
+
+      suiteSetup(function(done) {
+        var db = new PouchDB('analytics-meta');
+        db.destroy().then(function (response) {
+          done();
+        }).catch(function (err) {
+          done(err);
+        });
+      });
+
+      setup(function() {
+        element = fixture('disabled');
+      });
+
+      test('Should be disabled after initialization', function(done) {
+        element.addEventListener('app-analytics-ready', function() {
+          assert.equal(element.disableTracking, true);
+          done();
+        });
       });
     });
     </script>

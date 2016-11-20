@@ -297,7 +297,6 @@ this.fire('send-analytics', {
     },
 
     observers: [
-      '_metaDataChanged(_metaData.*)',
       '__uploadOffline(inited, isOnline, _offlineResult.*)',
       '__checkOfflineUpload(isOnline)',
       '_init(inited)',
@@ -319,6 +318,10 @@ this.fire('send-analytics', {
           return (node.nodeType === Node.ELEMENT_NODE);
         });
         this._processRemovedNodes(info.removedNodes);
+      }.bind(this));
+
+      this.$.metaStore.initializeStoredValue().then(function() {
+        this._setupMeta();
       }.bind(this));
     },
 
@@ -366,32 +369,34 @@ this.fire('send-analytics', {
      * been already set.
      * Finally it will set corresponding properties on the element.
      */
-    _metaDataChanged: function() {
-
+    _setupMeta: function() {
       var meta = Object.assign({}, this._metaData);
       if (!meta) {
         return;
       }
-      if (meta._id && meta._rev) {
-        if (typeof meta.disableTracking === 'undefined') {
-          if (typeof this.disableTracking !== 'undefined') {
-            meta.disableTracking = this.disableTracking;
-          } else {
-            meta.disableTracking = false;
-          }
-        }
-        if (!meta.cid) {
-          let uuid = this.clientId;
-          if (!uuid) {
-            uuid = this.$.uuid.generate();
-          }
-          meta.cid = uuid;
+      if (typeof meta.disableTracking === 'undefined') {
+        if (typeof this.disableTracking !== 'undefined') {
+          meta.disableTracking = this.disableTracking;
+        } else {
+          meta.disableTracking = false;
         }
       }
-      if (meta.disableTracking !== this.disableTracking) {
+      if (!meta.cid) {
+        var uuid = this.clientId;
+        if (!uuid) {
+          uuid = this.$.uuid.generate();
+        }
+        meta.cid = uuid;
+      }
+
+      if (this.disableTracking === undefined) {
         this.set('disableTracking', Boolean(meta.disableTracking));
+      } else if (meta.disableTracking !== this.disableTracking) {
+        this.async(function() {
+          this._disableTrackingChanged(this.disableTracking);
+        }, 1);
       }
-      if (this.clientId !== meta.cid) {
+      if (this.clientId === undefined) {
         this.set('clientId', meta.cid);
       }
     },
@@ -507,15 +512,16 @@ this.fire('send-analytics', {
         return;
       }
       var len = this._queue.length;
+      var i = 0;
       if (len) {
-        for (let i = 0; i < len; i++) {
+        for (; i < len; i++) {
           this._sendHandler(this._queue[i]);
         }
       }
       this._queue = [];
       len = this._customDataQueue.length;
       if (len) {
-        for (let i = 0; i < len; i++) {
+        for (i = 0; i < len; i++) {
           this._customPropertyChanged(this._customDataQueue[i]);
         }
       }
@@ -622,16 +628,19 @@ this.fire('send-analytics', {
         return;
       }
       var self = this;
-      let promises = list.map(function(item) {
+      var promises = list.map(function(item) {
         return self.$.index.db.get(item._id);
       });
+
       Promise.all(promises).then(function(list) {
         return self._sendBulk(list);
       })
       .then(function(list) {
-        let promises = list.map(function(i) { return self.$.index.db.remove(i); });
+        var promises = list.map(function(i) { return self.$.index.db.remove(i); });
         return Promise.all(promises)
-        .then(function() {return self.__checkOfflineUpload(self.isOnline); });
+        .then(function() {
+          return self.__checkOfflineUpload(self.isOnline);
+        });
       })
       .catch(function(e) {
         self.__printError(e);
