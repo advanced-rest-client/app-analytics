@@ -42,13 +42,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var element;
       var cids = [];
 
-      suiteSetup(function(done) {
+      suiteSetup(function() {
         var db = new PouchDB('analytics-meta');
-        db.destroy().then(function (response) {
-          done();
-        }).catch(function (err) {
-          done(err);
-        });
+        return db.destroy();
       });
 
       setup(function() {
@@ -87,7 +83,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         element.addEventListener('app-analytics-ready', function() {
           // disabled in previous test, it test persistancy
           element.sendHit('screenview', {
-            cd: name
+            cd: 'test'
           })
           .then((result) => {
             expect(result).to.exist;
@@ -130,13 +126,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     suite('disbaled', function() {
       var element;
 
-      suiteSetup(function(done) {
+      suiteSetup(function() {
         var db = new PouchDB('analytics-meta');
-        db.destroy().then(function (response) {
-          done();
-        }).catch(function (err) {
-          done(err);
-        });
+        return db.destroy();
       });
 
       setup(function() {
