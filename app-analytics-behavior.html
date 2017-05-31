@@ -460,7 +460,9 @@ the License.
       var pos = cd.findIndex(function(i) { return i.index === index; });
 
       if (pos !== -1) {
-        this.set('customDimensions.' + pos + '.value', value);
+        if (this.customDimensions[pos].value !== value) {
+          this.set('customDimensions.' + pos + '.value', value);
+        }
         return;
       }
       this.push('customDimensions', {
@@ -504,7 +506,9 @@ the License.
       var cm = this.customMetrics || [];
       var pos = cm.findIndex(function(i) { return i.index === index; });
       if (pos !== -1) {
-        this.set('customMetrics.' + pos + '.value', value);
+        if (this.customMetrics[pos].value !== value) {
+          this.set('customMetrics.' + pos + '.value', value);
+        }
         return;
       }
       this.push('customMetrics', {
@@ -695,12 +699,12 @@ the License.
       }
       if (opts.customDimensions && opts.customDimensions.length) {
         opts.customDimensions.forEach(function(item) {
-          data['cd' + item.index] = encodeURIComponent(item.value);
+          data['cd' + item.index] = item.value;
         });
       }
       if (opts.customMetrics && opts.customMetrics.length) {
         opts.customMetrics.forEach(function(item) {
-          data['cm' + item.index] = encodeURIComponent(item.value);
+          data['cm' + item.index] = item.value;
         });
       }
     },
@@ -746,7 +750,7 @@ the License.
 
     _processParams: function(params) {
       for (var param in params) {
-        params[param] = encodeURIComponent(params[param]);
+        params[param] = this.encodeQueryString(params[param]);
       }
     },
     // Creates a post body from the params.
@@ -759,6 +763,14 @@ the License.
         result += param + '=' + params[param];
       }
       return result;
+    },
+
+    encodeQueryString: function(str) {
+      if (!str) {
+        return str;
+      }
+      var regexp = /%20/g;
+      return encodeURIComponent(str).replace(regexp, '+');
     },
 
     _configureBaseParams: function(inited, clientId, userId, trackingId, anonymizeIp, dataSource,
@@ -790,42 +802,42 @@ the License.
         data.aip = '1';
       }
       if (dataSource) {
-        data.ds = encodeURIComponent(dataSource);
+        data.ds = this.encodeQueryString(dataSource);
       }
       if (referrer) {
-        data.dr = encodeURIComponent(referrer);
+        data.dr = this.encodeQueryString(referrer);
       }
       if (campaignName) {
-        data.cn = encodeURIComponent(campaignName);
+        data.cn = this.encodeQueryString(campaignName);
       }
       if (campaignSource) {
-        data.cs = encodeURIComponent(campaignSource);
+        data.cs = this.encodeQueryString(campaignSource);
       }
       if (campaignMedium) {
-        data.cm = encodeURIComponent(campaignMedium);
+        data.cm = this.encodeQueryString(campaignMedium);
       }
       if (appVersion) {
-        data.av = encodeURIComponent(appVersion);
+        data.av = this.encodeQueryString(appVersion);
       }
       if (appName) {
-        data.an = encodeURIComponent(appName);
+        data.an = this.encodeQueryString(appName);
       }
       if (appId) {
-        data.aid = encodeURIComponent(appId);
+        data.aid = this.encodeQueryString(appId);
       }
       if (appInstallerId) {
-        data.appInstallerId = encodeURIComponent(appInstallerId);
+        data.appInstallerId = this.encodeQueryString(appInstallerId);
       }
 
       if (this.customMetrics.length) {
         this.customMetrics.forEach(function(cm) {
-          data['cm' + cm.index] = encodeURIComponent(cm.value);
-        });
+          data['cm' + cm.index] = this.encodeQueryString(cm.value);
+        }, this);
       }
       if (this.customDimensions.length) {
         this.customDimensions.forEach(function(cd) {
-          data['cd' + cd.index] = encodeURIComponent(cd.value);
-        });
+          data['cd' + cd.index] = this.encodeQueryString(cd.value);
+        }, this);
       }
       if (this.debug) {
         console.info('[GA] Configuring base object', data);
@@ -965,6 +977,12 @@ the License.
       if (this.useCacheBooster) {
         url += '?z=' + Date.now();
       }
+
+      if (this.__testRunner) {
+        // For test cases.
+        return Promise.resolve(init);
+      }
+
       return fetch(url, init)
       .then(function(response) {
         if (response.status !== 200) {
