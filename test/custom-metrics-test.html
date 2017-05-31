@@ -46,7 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var element;
         var cids = [];
 
-        suiteSetup(function() {
+        suiteTeardown(function() {
           var db = new PouchDB('analytics-meta');
           return db.destroy();
         });
@@ -87,7 +87,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var element;
         var cids = [];
 
-        suiteSetup(function() {
+        suiteTeardown(function() {
           var db = new PouchDB('analytics-meta');
           return db.destroy();
         });
