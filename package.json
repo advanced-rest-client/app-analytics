@@ -14,7 +14,7 @@
   "author": "The Advanced REST client authors <arc@mulesoft.com>",
   "scripts": {
     "serve": "node_modules/.bin/polymer serve",
-    "lint": "node_modules/.bin/polymer lint app-analytics.html",
+    "lint": "node_modules/.bin/polymer lint app-analytics.html app-analytics-behavior.html app-analytics-custom.html",
     "test-sauce": "node_modules/.bin/polymer test --plugin sauce --job-name \"app-analytics:local-test\"",
     "test": "node_modules/.bin/polymer test",
     "deps": "npm install --quiet && bower install --quiet",
