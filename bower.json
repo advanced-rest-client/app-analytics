@@ -1,10 +1,20 @@
 {
   "name": "app-analytics",
   "description": "An element that support Google Analytics analysis",
-  "authors": ["The Advanced REST client authors <arc@mulesoft.com>"],
-  "keywords": ["web-components", "polymer", "google-analytics", "analytics"],
+  "authors": [
+    "The Advanced REST client authors <arc@mulesoft.com>"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "google-analytics",
+    "analytics"
+  ],
   "private": true,
-  "main": ["app-analytics.html", "app-analytics-custom.html"],
+  "main": [
+    "app-analytics.html",
+    "app-analytics-custom.html"
+  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:advanced-rest-client/app-analytics.git"
@@ -35,6 +45,14 @@
     "form-action-bar": "advanced-rest-client/form-action-bar#^1.0.3",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^1.2.1"
   },
-  "ignore": ["**/.*", "dependencyci.yml", "node_modules", "bower_components", "test", "tasks", "CONTRIBUTING.md"],
-  "version": "1.0.13"
+  "ignore": [
+    "**/.*",
+    "dependencyci.yml",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tasks",
+    "CONTRIBUTING.md"
+  ],
+  "version": "1.0.14"
 }
