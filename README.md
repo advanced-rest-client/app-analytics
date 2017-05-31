@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/advanced-rest-client/app-analytics.svg?branch=master)](https://travis-ci.org/advanced-rest-client/app-analytics)  [![Dependency Status](https://dependencyci.com/github/advanced-rest-client/app-analytics/badge)](https://dependencyci.com/github/advanced-rest-client/app-analytics)  
+[![Build Status](https://travis-ci.org/advanced-rest-client/app-analytics.svg?branch=stage)](https://travis-ci.org/advanced-rest-client/app-analytics)  
 
 # app-analytics
 

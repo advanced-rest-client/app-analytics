@@ -310,13 +310,16 @@ this.fire('send-analytics', {
     },
 
     attached: function() {
-      this._eventTarget = Polymer.dom(this).host || document;
-      this.listen(this._eventTarget, 'app-analytics-permitted', '_permittedHandler');
-      this.listen(this._eventTarget, 'send-analytics', '_sendHandler');
+      this.listen(window, 'app-analytics-permitted', '_permittedHandler');
+      this.listen(window, 'send-analytics', '_sendHandler');
       this._observer = Polymer.dom(this.$.content).observeNodes(function(info) {
+        info.addedNodes = info.addedNodes.filter(function(node) {
+          return (node.nodeType === Node.ELEMENT_NODE);
+        });
         info.removedNodes = info.removedNodes.filter(function(node) {
           return (node.nodeType === Node.ELEMENT_NODE);
         });
+        this._processAddedNodes(info.removedNodes);
         this._processRemovedNodes(info.removedNodes);
       }.bind(this));
 
@@ -326,8 +329,8 @@ this.fire('send-analytics', {
     },
 
     detached: function() {
-      this.unlisten(this._eventTarget, 'app-analytics-permitted', '_permittedHandler');
-      this.unlisten(this._eventTarget, 'send-analytics', '_sendHandler');
+      this.unlisten(window, 'app-analytics-permitted', '_permittedHandler');
+      this.unlisten(window, 'send-analytics', '_sendHandler');
       Polymer.dom(this.$.content).unobserveNodes(this._observer);
     },
 
@@ -339,6 +342,26 @@ this.fire('send-analytics', {
       this._processQueue();
     },
     /**
+     * Adds custom metric / dimension from a child node observer.
+     */
+    _processAddedNodes: function(nodes) {
+      if (!nodes || !nodes.length) {
+        return;
+      }
+      nodes.forEach(function(i) {
+        if (i.nodeName !== 'APP-ANALYTICS-CUSTOM') {
+          return;
+        }
+        if (i.index && i.type) {
+          if (i.type === 'dimension') {
+            this.addCustomDimension(d.index, d.value);
+          } else if (i.type === 'metric') {
+            this.addCustomMetric(d.index, d.value);
+          }
+        }
+      }, this);
+    },
+    /**
      * Remove custom dimensions.
      * Child elements can't send event here when they are already detached from the document
      * so the parent element must observe child and determine if custom dimenstion should
@@ -348,19 +371,18 @@ this.fire('send-analytics', {
       if (!nodes || !nodes.length) {
         return;
       }
-      var self = this;
       nodes.forEach(function(i) {
         if (i.nodeName !== 'APP-ANALYTICS-CUSTOM') {
           return;
         }
         if (i.index && i.type) {
           if (i.type === 'dimension') {
-            self.removeCustomDimension(i.index);
+            this.removeCustomDimension(i.index);
           } else if (i.type === 'metric') {
-            self.removeCustomMetric(i.index);
+            this.removeCustomMetric(i.index);
           }
         }
-      });
+      }, this);
     },
 
     /**
@@ -370,10 +392,10 @@ this.fire('send-analytics', {
      * Finally it will set corresponding properties on the element.
      */
     _setupMeta: function() {
-      var meta = Object.assign({}, this._metaData);
-      if (!meta) {
+      if (!this._metaData) {
         return;
       }
+      var meta = Object.assign({}, this._metaData);
       if (typeof meta.disableTracking === 'undefined') {
         if (typeof this.disableTracking !== 'undefined') {
           meta.disableTracking = this.disableTracking;
@@ -390,7 +412,11 @@ this.fire('send-analytics', {
       }
 
       if (this.disableTracking === undefined) {
-        this.set('disableTracking', Boolean(meta.disableTracking));
+        var trackingDisabled = false;
+        if (meta.disableTracking === true || meta.disableTracking === 'true') {
+          trackingDisabled = true;
+        }
+        this.set('disableTracking', trackingDisabled);
       } else if (meta.disableTracking !== this.disableTracking) {
         this.async(function() {
           this._disableTrackingChanged(this.disableTracking);
@@ -427,6 +453,7 @@ this.fire('send-analytics', {
       if (!e.detail) {
         return;
       }
+
       if (this.disableTracking) {
         e.detail.sent = false;
         e.detail.message = 'Tracking is disabled.';
@@ -637,10 +664,12 @@ this.fire('send-analytics', {
       })
       .then(function(list) {
         var promises = list.map(function(i) { return self.$.index.db.remove(i); });
-        return Promise.all(promises)
-        .then(function() {
-          return self.__checkOfflineUpload(self.isOnline);
-        });
+        return Promise.all(promises);
+        // TODO: This may produce infinite loop if the GA host is blocked
+        // on (for example) proxy level.
+        // .then(function() {
+        //   return self.__checkOfflineUpload(self.isOnline);
+        // });
       })
       .catch(function(e) {
         self.__printError(e);

@@ -1,3 +1,21 @@
+<a name="1.0.14"></a>
+## [1.0.14](https://github.com/advanced-rest-client/app-analytics/compare/1.0.13...v1.0.14) (2017-05-31)
+
+
+### Fix
+
+* Many small bug fixes. ([5c5acbb93dda7efcd21845f02ea2f300941e5dac](https://github.com/advanced-rest-client/app-analytics/commit/5c5acbb93dda7efcd21845f02ea2f300941e5dac))
+
+### New
+
+* Added new tests. Updated old tests ([8a9828e9fc612c14ae221b511df827fcb4d1410f](https://github.com/advanced-rest-client/app-analytics/commit/8a9828e9fc612c14ae221b511df827fcb4d1410f))
+
+### Update
+
+* Added safari 10 to testd browsers ([f59dc67afa6980e67336023b4240c7690d8b73d9](https://github.com/advanced-rest-client/app-analytics/commit/f59dc67afa6980e67336023b4240c7690d8b73d9))
+
+
+
 <a name="1.0.13"></a>
 ## [1.0.13](https://github.com/advanced-rest-client/app-analytics/compare/1.0.12...v1.0.13) (2016-11-20)
 
