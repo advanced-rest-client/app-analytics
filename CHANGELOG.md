@@ -1,3 +1,13 @@
+<a name="1.0.15"></a>
+## [1.0.15](https://github.com/advanced-rest-client/app-analytics/compare/1.0.14...v1.0.15) (2017-07-08)
+
+
+### Fix
+
+* Fixed tests ([2a67ff6c6940bfecd923088c11a7b86124c47b33](https://github.com/advanced-rest-client/app-analytics/commit/2a67ff6c6940bfecd923088c11a7b86124c47b33))
+
+
+
 <a name="1.0.14"></a>
 ## [1.0.14](https://github.com/advanced-rest-client/app-analytics/compare/1.0.13...v1.0.14) (2017-05-31)
 
