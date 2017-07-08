@@ -4,7 +4,7 @@
   "license": "Apache-2.0 OR CC-BY-4.0",
   "description": "An element that support Google Analytics analysis",
   "devDependencies": {
-    "polymer-cli": "latest"
+    "polymer-cli": "^1.2.0"
   },
   "engines": {
     "node": ">=0.10.0"
@@ -16,9 +16,9 @@
   "author": "The Advanced REST client authors <arc@mulesoft.com>",
   "scripts": {
     "serve": "node_modules/.bin/polymer serve",
-    "lint": "node_modules/.bin/polymer lint app-analytics.html app-analytics-behavior.html app-analytics-custom.html",
+    "lint": "node_modules/.bin/polymer lint app-analytics.html app-analytics-behavior.html app-analytics-custom.html --rules polymer-1",
     "test-sauce": "node_modules/.bin/polymer test --plugin sauce --job-name \"app-analytics:local-test\"",
-    "test": "node_modules/.bin/polymer test",
+    "test": "node_modules/.bin/polymer test --plugin local",
     "deps": "npm install --quiet && bower install --quiet",
     "update-deps": "npm update --quiet && bower update --quiet"
   },

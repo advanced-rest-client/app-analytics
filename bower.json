@@ -23,7 +23,8 @@
     "polymer": "Polymer/polymer#^1.0.0",
     "app-pouchdb": "advanced-rest-client/app-pouchdb#^1.0.0",
     "uuid-generator": "advanced-rest-client/uuid-generator#^1.0.3",
-    "connectivity-state": "advanced-rest-client/connectivity-state#^0.0.2"
+    "connectivity-state": "advanced-rest-client/connectivity-state#^0.0.2",
+    "arc-polyfills": "advanced-rest-client/arc-polyfills#^0.1.8"
   },
   "devDependencies": {
     "iron-component-page": "polymerelements/iron-component-page#1.0.0",

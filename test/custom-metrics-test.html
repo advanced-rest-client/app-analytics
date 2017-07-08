@@ -41,10 +41,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </test-fixture>
 
     <script>
+    /* global fixture, assert */
     suite('Custom data', function() {
       suite('custom-metrics', function() {
         var element;
-        var cids = [];
 
         suiteTeardown(function() {
           var db = new PouchDB('analytics-meta');
@@ -85,7 +85,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       suite('custom-dimension', function() {
         var element;
-        var cids = [];
 
         suiteTeardown(function() {
           var db = new PouchDB('analytics-meta');
