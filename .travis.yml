@@ -1,5 +1,4 @@
 language: node_js
-sudo: required
 dist: trusty
 node_js: stable
 before_script:
@@ -8,7 +7,7 @@ before_script:
 addons:
   sauce_connect: true
 script:
-- polymer lint app-analytics.html
+- npm run lint
 - polymer test --plugin sauce --job-name "raml-path-to-object:${TRAVIS_BRANCH}" --build-number=${TRAVIS_BUILD_NUMBER}
 cache:
   directories:

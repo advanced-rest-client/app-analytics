@@ -18,6 +18,7 @@ the License.
 <link rel="import" href="../app-pouchdb/app-pouchdb-document.html">
 <link rel="import" href="../uuid-generator/uuid-generator.html">
 <link rel="import" href="../connectivity-state/connectivity-state.html">
+<link rel="import" href="../arc-polyfills/arc-polyfills.html">
 <link rel="import" href="app-analytics-behavior.html">
 <!--
 `<app-analytics>` An element that support Google Analytics analysis
@@ -354,9 +355,9 @@ this.fire('send-analytics', {
         }
         if (i.index && i.type) {
           if (i.type === 'dimension') {
-            this.addCustomDimension(d.index, d.value);
+            this.addCustomDimension(i.index, i.value);
           } else if (i.type === 'metric') {
-            this.addCustomMetric(d.index, d.value);
+            this.addCustomMetric(i.index, i.value);
           }
         }
       }, this);
@@ -461,6 +462,9 @@ this.fire('send-analytics', {
       }
 
       if (!this.inited) {
+        if (!this._queue) {
+          this._queue = [];
+        }
         this._queue.push(e);
         return;
       }
@@ -558,6 +562,9 @@ this.fire('send-analytics', {
     // Handler for app-analytics-custom-changed event. Registers a new custom property.
     _customPropertyChanged: function(e) {
       if (!this.inited) {
+        if (!this._customDataQueue) {
+          this._customDataQueue = [];
+        }
         this._customDataQueue.push(e);
         return;
       }
