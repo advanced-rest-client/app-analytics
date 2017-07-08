@@ -14,9 +14,11 @@
   "undef": true,
   "unused": true,
   "newcap": false,
+  "mocha": true,
   "globals": {
     "Polymer": true,
     "ArcBehaviors": true,
-    "Promise": true
+    "Promise": true,
+    "PouchDB": true
   }
 }
