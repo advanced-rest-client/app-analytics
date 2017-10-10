@@ -34,39 +34,16 @@ the License.
 
 The `app-name` and `tracking-id` are required parameters in order to run the element properly.
 
-This element initalize its own database where config data will be stored
-(cid parameter, information if analitics has been disabled).
+This element initalize its own database where config data are stored (cid parameter).
 
 If `clientId` attribute is not set it will be generated automatically. There's no need to set
 it manually if there's no need.
 
 __Google Analytics do not allow sending any information that may lead to a user__
 
-Always give the user ability to disable tracking. In EU you have to have a permission from
-the user to store data on his computer. The `app-database`'s default config is to permit
-tracking. Disable it by calling a function on the element:
-```
-document.querySelector('app-analytics').setTrackingPermitted(false);
-```
-setting up attribute:
-```
-<app-analytics tracking-id="UA-XXXXXXX-Y" disable-tracking></app-analytics>
-```
-or fire custom event:
-```
-// inside Polymer element:
-this.fire('app-analytics-permitted', {
-  permitted: false
-});
-// or in JavaScript
-var event = new CustomEvent('app-analytics-permitted', {
-  detail: {
-    permitted: false,
-    bubbles: true
-  }
-});
-document.dispatchEvent(event);
-```
+Always give the user ability to disable tracking. Under EU laws you need to have
+permission from the user to store data on his device. To disable analytics simply
+remove the element from the DOM.
 
 ### Using `<app-analytics>`
 
@@ -257,12 +234,6 @@ this.fire('send-analytics', {
      * @event app-analytics-ready
      * @param {String} trackingId A tracking ID related to this configuration.
      */
-    /**
-     * Firwed when Library `permitted` state changed.
-     *
-     * @event app-analytics-permitted-changed
-     * @param {Boolean} permitted Current state.
-     */
     properties: {
       // Oflline storage indexes
       _storeIndexFields: {
@@ -276,7 +247,6 @@ this.fire('send-analytics', {
       /**
        * Internal metadata that keeps information about:
        * - cid - client id used to recognize the user accross the sessions
-       * - disableTracking - information is this instance of analytics is enabled.
        */
       _metaData: Object,
 
@@ -301,7 +271,6 @@ this.fire('send-analytics', {
       '__uploadOffline(inited, isOnline, _offlineResult.*)',
       '__checkOfflineUpload(isOnline)',
       '_init(inited)',
-      '_disableTrackingChanged(disableTracking)',
       '_clientIdChanged(clientId)'
     ],
 
@@ -311,7 +280,6 @@ this.fire('send-analytics', {
     },
 
     attached: function() {
-      this.listen(window, 'app-analytics-permitted', '_permittedHandler');
       this.listen(window, 'send-analytics', '_sendHandler');
       this._observer = Polymer.dom(this.$.content).observeNodes(function(info) {
         info.addedNodes = info.addedNodes.filter(function(node) {
@@ -330,7 +298,6 @@ this.fire('send-analytics', {
     },
 
     detached: function() {
-      this.unlisten(window, 'app-analytics-permitted', '_permittedHandler');
       this.unlisten(window, 'send-analytics', '_sendHandler');
       Polymer.dom(this.$.content).unobserveNodes(this._observer);
     },
@@ -397,13 +364,6 @@ this.fire('send-analytics', {
         return;
       }
       var meta = Object.assign({}, this._metaData);
-      if (typeof meta.disableTracking === 'undefined') {
-        if (typeof this.disableTracking !== 'undefined') {
-          meta.disableTracking = this.disableTracking;
-        } else {
-          meta.disableTracking = false;
-        }
-      }
       if (!meta.cid) {
         var uuid = this.clientId;
         if (!uuid) {
@@ -411,31 +371,8 @@ this.fire('send-analytics', {
         }
         meta.cid = uuid;
       }
-
-      if (this.disableTracking === undefined) {
-        var trackingDisabled = false;
-        if (meta.disableTracking === true || meta.disableTracking === 'true') {
-          trackingDisabled = true;
-        }
-        this.set('disableTracking', trackingDisabled);
-      } else if (meta.disableTracking !== this.disableTracking) {
-        this.async(function() {
-          this._disableTrackingChanged(this.disableTracking);
-        }, 1);
-      }
       if (this.clientId === undefined) {
         this.set('clientId', meta.cid);
-      }
-    },
-
-    _disableTrackingChanged: function(disableTracking) {
-      if (disableTracking === true || disableTracking === false) {
-        if (this._metaData &&
-          this._metaData.disableTracking !== disableTracking &&
-          this._metaData._rev && this._metaData._id) {
-          this.set('_metaData.disableTracking', disableTracking);
-          this.$.metaStore.save();
-        }
       }
     },
 
@@ -452,12 +389,6 @@ this.fire('send-analytics', {
     // An event handler for `send-analytics`
     _sendHandler: function(e) {
       if (!e.detail) {
-        return;
-      }
-
-      if (this.disableTracking) {
-        e.detail.sent = false;
-        e.detail.message = 'Tracking is disabled.';
         return;
       }
 
@@ -509,27 +440,6 @@ this.fire('send-analytics', {
           break;
       }
     },
-
-    // Enable or disable GA.
-    _permittedHandler: function(e) {
-      if (typeof e.detail.permitted === 'undefined') {
-        e.detail.error = true;
-        e.detail.message = 'Set `permitted` detail property first.';
-        return;
-      }
-      this.setTrackingPermitted(e.detail.permitted);
-    },
-    /**
-     * Enables or disables tracking.
-     * Rquests to GA won't be send if tracking is disabled.
-     *
-     * @param {Boolean} state If true then tracking is enabled, false tracking is disabled.
-     */
-    setTrackingPermitted: function(state) {
-      state = Boolean(state);
-      this.set('disableTracking', !state);
-    },
-
     /**
      * Any request made to this element before it was initialized would be lost. But the element
      * keeps it in the temp queue so after initialization they may be called again.
@@ -538,10 +448,6 @@ this.fire('send-analytics', {
      * TODO: What if the element won't initialize? Is it should be lost?
      */
     _processQueue: function() {
-      if (this.disableTracking) {
-        this._queue = [];
-        return;
-      }
       var len = this._queue.length;
       var i = 0;
       if (len) {

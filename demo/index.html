@@ -175,7 +175,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h3>The `app-analytics`</h3>
       <section card>
         <h4>Bacsic information</h4>
-        <paper-toggle-button checked="{{disableTracking}}">Disable `app-analytics`</paper-toggle-button>
         <paper-toggle-button checked="{{debug}}">Debug (output to console)</paper-toggle-button>
         <paper-toggle-button checked="{{debugEndpoint}}">Debug endponit (request parser)</paper-toggle-button>
         <paper-input label="Tracking ID (UA-XXXX-Y)" value="{{trackingId}}"></paper-input>
@@ -288,7 +287,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div id="errorStatus" prefix hidden>Issue found in last hit</div>
         <paper-button raised disabled$="[[!hitType]]" on-tap="send">Send hit</paper-button>
       </form-action-bar>
-      <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug="[[debug]]" debug-endpoint="[[debugEndpoint]]" disable-tracking="{{disableTracking}}">
+      <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug="[[debug]]" debug-endpoint="[[debugEndpoint]]">
         <template is="dom-repeat" items="[[customMetrics]]">
           <app-analytics-custom type="metric" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
         </template>
@@ -322,7 +321,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     app.hasCustomData = false;
     app.customMetrics = [];
     app.customDimensions = [];
-    // app.disableTracking = true;
     var d = new Date();
     d = d.toISOString();
     d = d.substr(0, d.lastIndexOf('.'));
