@@ -78,14 +78,6 @@ the License.
      */
     properties: {
       /**
-       * If set then the tracking will be disabled and all calls will be
-       * void.
-       */
-      disableTracking: {
-        type: Boolean,
-        notify: true
-      },
-      /**
        * The Client ID for the mearusement protocol.
        *
        * **It is required for all types of calls.**
@@ -424,10 +416,6 @@ the License.
         return;
       }
       this.fire('app-analytics-ready');
-      if (this.disableTracking) {
-        this._pending = undefined;
-        return;
-      }
       if (!this._pending) {
         return;
       }
@@ -540,9 +528,6 @@ the License.
      * representing value of the property.
      */
     sendScreen: function(name, opts) {
-      if (this.disableTracking) {
-        return;
-      }
       var data = {
         cd: name
       };
@@ -562,9 +547,6 @@ the License.
      * representing value of the property.
      */
     sendEvent: function(category, action, label, value, opts) {
-      if (this.disableTracking) {
-        return;
-      }
       var missing = [];
       if (!category) {
         missing.push('category');
@@ -599,9 +581,6 @@ the License.
      * representing value of the property.
      */
     sendException: function(description, fatal, opts) {
-      if (this.disableTracking) {
-        return;
-      }
       fatal = fatal ? '1' : '0';
       var data = {
         exd: description,
@@ -624,9 +603,6 @@ the License.
      * representing value of the property.
      */
     sendSocial: function(network, action, target, opts) {
-      if (this.disableTracking) {
-        return;
-      }
       var missing = [];
       if (!network) {
         missing.push('network');
@@ -662,9 +638,6 @@ the License.
      * representing value of the property.
      */
     sendTimings: function(category, variable, time, label, cmOpts) {
-      if (this.disableTracking) {
-        return;
-      }
       var missing = [];
       if (!category) {
         missing.push('category');
@@ -717,11 +690,6 @@ the License.
      * @param {Array<String,String>} map of params to send wit this hit.
      */
     sendHit: function(type, params) {
-      if (this.disableTracking) {
-        return Promise.resolve({
-          disabled: true
-        });
-      }
       if (!this.inited) {
         this._pending = this._pending || [];
         this._pending.push({
@@ -928,9 +896,6 @@ the License.
      * @param {Array} list Array of hits that waren't sent earier.
      */
     _sendBulk: function(list) {
-      if (this.disableTracking) {
-        return Promise.resolve();
-      }
       var now = Date.now();
       // Append delat argument.
       var body = list.map(function(item, i) {
@@ -954,11 +919,6 @@ the License.
     },
 
     _transport: function(body, offline) {
-      if (this.disableTracking) {
-        return Promise.resolve({
-          disabled: true
-        });
-      }
       offline = offline || false;
       if (!navigator.onLine) {
         this._storeOffline(body);
