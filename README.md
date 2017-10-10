@@ -15,39 +15,16 @@
 
 The `app-name` and `tracking-id` are required parameters in order to run the element properly.
 
-This element initalize its own database where config data will be stored
-(cid parameter, information if analitics has been disabled).
+This element initalize its own database where config data are stored (cid parameter).
 
 If `clientId` attribute is not set it will be generated automatically. There's no need to set
 it manually if there's no need.
 
 __Google Analytics do not allow sending any information that may lead to a user__
 
-Always give the user ability to disable tracking. In EU you have to have a permission from
-the user to store data on his computer. The `app-database`'s default config is to permit
-tracking. Disable it by calling a function on the element:
-```
-document.querySelector('app-analytics').setTrackingPermitted(false);
-```
-setting up attribute:
-```
-<app-analytics tracking-id="UA-XXXXXXX-Y" disable-tracking></app-analytics>
-```
-or fire custom event:
-```
-// inside Polymer element:
-this.fire('app-analytics-permitted', {
-  permitted: false
-});
-// or in JavaScript
-var event = new CustomEvent('app-analytics-permitted', {
-  detail: {
-    permitted: false,
-    bubbles: true
-  }
-});
-document.dispatchEvent(event);
-```
+Always give the user ability to disable tracking. Under EU laws you need to have
+permission from the user to store data on his device. To disable analytics simply
+remove the element from the DOM.
 
 ### Using `<app-analytics>`
 
@@ -212,7 +189,6 @@ this.fire('send-analytics', {
 ### Events
 | Name | Description | Params |
 | --- | --- | --- |
-| app-analytics-permitted-changed | Firwed when Library `permitted` state changed. | permitted **Boolean** - Current state. |
 | app-analytics-ready | An event fired when the Google Analytics configuration is set and ready to rock. It doesn't matter if tracking is permitted. The tracking object will be ready to enable tracking on user demand. | trackingId **String** - A tracking ID related to this configuration. |
 | app-analytics-structure-debug | Fired when `debugEndpoint` is set to `true`. Contains a validation result from the GA server. The result is in following format: ```javascript {   "hitParsingResult": [{     "valid": false,     "hit": "GET /debug/collect?tid=fake\u0026v=1 HTTP/1.1",     "parserMessage": [{       "messageType": "ERROR",       "description": "The value provided for parameter ...",       "parameter": "tid"     }, {       "messageType": "ERROR",       "description": "Tracking Id is a required field ...",       "parameter": "tid"     }]   }] } ``` | debug **Object** - A validation result from the GA server. |
 # app-analytics-custom

@@ -1,3 +1,13 @@
+<a name="1.1.1"></a>
+## [1.1.1](https://github.com/advanced-rest-client/app-analytics/compare/1.0.15...1.1.1) (2017-10-10)
+
+
+### Update
+
+* Removed support for disabling GA. Remove element from the DOM instead. ([d6d04a56d63495b3b724f53eb355ccab7ccd46ef](https://github.com/advanced-rest-client/app-analytics/commit/d6d04a56d63495b3b724f53eb355ccab7ccd46ef))
+
+
+
 <a name="1.0.16"></a>
 ## [1.0.16](https://github.com/advanced-rest-client/app-analytics/compare/1.0.15...v1.0.16) (2017-07-08)
 
