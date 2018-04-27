@@ -1,24 +1,10 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-    <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <!-- Step 1: import the element to test -->
     <link rel="import" href="../app-analytics.html">
     <link rel="import" href="../app-analytics-custom.html">
   </head>
@@ -44,19 +30,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     /* global fixture, assert */
     suite('Custom data', function() {
       suite('custom-metrics', function() {
-        var element;
-
-        suiteTeardown(function() {
-          var db = new PouchDB('analytics-meta');
-          return db.destroy();
-        });
+        let element;
 
         setup(function(done) {
           this.timeout(1000);
           element = fixture('metric');
-          element.addEventListener('app-analytics-ready', function() {
-            setTimeout(done, 1);
-          });
+          flush(() => done());
         });
 
         test('Should register custom metric', function() {
@@ -86,17 +65,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       suite('custom-dimension', function() {
         var element;
 
-        suiteTeardown(function() {
-          var db = new PouchDB('analytics-meta');
-          return db.destroy();
-        });
-
         setup(function(done) {
           this.timeout(1000);
           element = fixture('dimension');
-          element.addEventListener('app-analytics-ready', function() {
-            setTimeout(done, 1);
-          });
+          flush(() => done());
         });
 
         test('Should register custom dimension', function() {
