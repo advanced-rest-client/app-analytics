@@ -7,9 +7,13 @@
 Component to support Google Analystics measurement protocols
 
 ```html
-<app-analytics></app-analytics>
+<app-analytics
+ tracking-id="UA-XXXXXXX-Y"
+ app-name="my app"
+ app-version="1.0.0"
+ data-source="app-analytics element"></app-analytics>
 ```
 
 ### API components
 
-This components is a part of API components ecosystem: https://elements.advancedrestclient.com/
+This components is a part of [API components ecosystem](https://elements.advancedrestclient.com/)
