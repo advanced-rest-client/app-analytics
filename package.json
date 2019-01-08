@@ -1,5 +1,5 @@
 {
-  "name": "@arc-components/app-analytics",
+  "name": "@advanced-rest-client/app-analytics",
   "version": "2.0.0-preview",
   "license": "Apache-2.0",
   "description": "An element that support Google Analytics analysis",
