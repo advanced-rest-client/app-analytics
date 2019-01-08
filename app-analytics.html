@@ -192,11 +192,13 @@ the License.
    * @memberof ArcElements
    */
   class AppAnalytics extends Polymer.Element {
-    static get is() { return 'app-analytics'; }
+    static get is() {
+      return 'app-analytics';
+    }
     static get properties() {
       return {
         // If true the app probably is online. See `<connectivity-state>`.
-        isOnline: Boolean,
+        isOnline: {type: Boolean, observer: '_onlineChanged'},
         // Generated POST parameters based on a params
         baseParams: {
           type: Array,
@@ -439,7 +441,7 @@ the License.
           type: Object,
           readOnly: true,
           value: function() {
-            var data = {
+            const data = {
               v: 'Protocol Version',
               tid: 'Tracking ID / Web Property ID',
               aip: 'Anonymize IP',
@@ -593,6 +595,7 @@ the License.
      * @param {String} cid New client id value
      */
     _cidChanged(cid) {
+      cid = cid || '';
       let localCid = localStorage.getItem(this.cidKey);
       if (cid !== localCid) {
         localStorage.setItem(this.cidKey, cid);
@@ -618,6 +621,7 @@ the License.
     }
     /**
      * Adds custom metric / dimension from a child node observer.
+     * @param {NodeList} nodes
      */
     _processAddedNodes(nodes) {
       if (!nodes || !nodes.length) {
@@ -641,6 +645,8 @@ the License.
      * Child elements can't send event here when they are already detached from the document
      * so the parent element must observe child and determine if custom dimenstion should
      * be removed.
+     *
+     * @param {NodeList} nodes
      */
     _processRemovedNodes(nodes) {
       if (!nodes || !nodes.length) {
@@ -669,10 +675,11 @@ the License.
     }
     // Handler for app-analytics-custom-removed event. Unregisters a custom property.
     _customPropertyRemoved(e) {
-      const d = e.detail;
-      switch (d.type) {
-        case 'dimension': this.removeCustomDimension(d.index); break;
-        case 'metric': this.removeCustomMetric(d.index); break;
+      e.stopPropagation();
+      const {type, index} = e.detail;
+      switch (type) {
+        case 'dimension': this.removeCustomDimension(index); break;
+        case 'metric': this.removeCustomMetric(index); break;
       }
     }
     /**
@@ -699,14 +706,13 @@ the License.
       if (pos !== -1) {
         if (this.customDimensions[pos].value !== value) {
           this.set('customDimensions.' + pos + '.value', value);
-          this._configureBaseParams();
         }
-        return;
+      } else {
+        this.push('customDimensions', {
+          index: index,
+          value: value
+        });
       }
-      this.push('customDimensions', {
-        index: index,
-        value: value
-      });
       this._configureBaseParams();
     }
     /**
@@ -750,12 +756,12 @@ the License.
           this.set('customMetrics.' + pos + '.value', value);
           this._configureBaseParams();
         }
-        return;
+      } else {
+        this.push('customMetrics', {
+          index: index,
+          value: value
+        });
       }
-      this.push('customMetrics', {
-        index: index,
-        value: value
-      });
       this._configureBaseParams();
     }
     /**
@@ -781,6 +787,7 @@ the License.
      * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
+     * @return {Promise}
      */
     sendScreen(name, opts) {
       const data = {
@@ -800,6 +807,7 @@ the License.
      * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
+     * @return {Promise}
      */
     sendEvent(category, action, label, value, opts) {
       const missing = [];
@@ -834,6 +842,7 @@ the License.
      * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
+     * @return {Promise}
      */
     sendException(description, fatal, opts) {
       fatal = fatal ? '1' : '0';
@@ -856,6 +865,7 @@ the License.
      * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
+     * @return {Promise}
      */
     sendSocial(network, action, target, opts) {
       const missing = [];
@@ -887,10 +897,11 @@ the License.
      * @param {Number} time Specifies the user timing value. The value is in milliseconds.
      * **required**
      * @param {String} label Specifies the user timing label.
-     * @param {Object} opts Custom data definition. It should be an object that may contain two
+     * @param {Object} cmOpts Custom data definition. It should be an object that may contain two
      * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
+     * @return {Promise}
      */
     sendTimings(category, variable, time, label, cmOpts) {
       const missing = [];
@@ -920,6 +931,9 @@ the License.
     /**
      * Append custom metrics / dimensions definitions to the
      * parameters list.
+     *
+     * @param {Object} data The data to send
+     * @param {?Object} opts
      */
     appendCustomData(data, opts) {
       if (!opts) {
@@ -942,7 +956,8 @@ the License.
      *
      * @param {String} type The type of hit. Must be one of 'pageview', 'screenview', 'event',
      * 'transaction', 'item', 'social', 'exception', 'timing'.
-     * @param {Array<String,String>} map of params to send wit this hit.
+     * @param {Array<String,String>} params Map of params to send wit this hit.
+     * @return {Promise}
      */
     sendHit(type, params) {
       if (['pageview', 'screenview', 'event', 'transaction', 'item', 'social', 'exception',
@@ -961,7 +976,10 @@ the License.
       return this._transport(body);
     }
 
-    // An event handler for `send-analytics`
+    /**
+     * An event handler for `send-analytics`
+     * @param {CustomEvent} e
+     */
     _sendHandler(e) {
       if (!e.detail || this.disabled) {
         return;
@@ -977,50 +995,50 @@ the License.
       switch (d.type) {
         case 'screenview':
           this.sendScreen(d.name, opts);
-          e.detail.sent = true;
           break;
         case 'event':
           this.sendEvent(d.category, d.action, d.label, d.value, opts);
-          e.detail.sent = true;
           break;
         case 'exception':
           this.sendException(d.description, d.fatal, opts);
-          e.detail.sent = true;
           break;
         case 'social':
           this.sendSocial(d.network, d.action, d.target, opts);
-          e.detail.sent = true;
           break;
         case 'timing':
           try {
             this.sendTimings(d.category, d.variable, d.value, d.label, opts);
-            e.detail.sent = true;
           } catch (e) {
-            e.detail.sent = false;
-            e.detail.message = e.message;
+            console.warn(e);
           }
           break;
         default:
-          e.detail.sent = false;
-          e.detail.message = 'Unknown type [' + d.type + ']';
+          console.warn('Unknown type [' + d.type + ']');
           break;
       }
     }
-
+    /**
+     * Encodes parameters.
+     * @param {Object} params
+     */
     _processParams(params) {
-      for (let param in params) {
+      Object.keys(params).forEach((param) => {
         params[param] = this.encodeQueryString(params[param]);
-      }
+      });
     }
-    // Creates a post body from the params.
+    /**
+     * Creates a post body from the params.
+     * @param {Object} params List of parameters to send
+     * @return {Stirng} Request body
+     */
     _createBody(params) {
       let result = '';
-      for (let param in params) {
+      Object.keys(params).forEach((param) => {
         if (result) {
           result += '&';
         }
         result += param + '=' + params[param];
-      }
+      });
       return result;
     }
 
@@ -1039,8 +1057,7 @@ the License.
         cid: this.clientId,
         ul: navigator.language,
         sr: screen.width + 'x' + screen.height,
-        sd: screen.pixelDepth,
-        vp: window.innerWidth + 'x' + window.innerHeight
+        sd: String(screen.pixelDepth)
       };
       const iw = window.innerWidth;
       const ih = window.innerHeight;
@@ -1079,9 +1096,8 @@ the License.
         data.aid = this.encodeQueryString(this.appId);
       }
       if (this.appInstallerId) {
-        data.appInstallerId = this.encodeQueryString(this.appInstallerId);
+        data.aiid = this.encodeQueryString(this.appInstallerId);
       }
-
       if (this.customMetrics.length) {
         this.customMetrics.forEach((cm) => {
           data['cm' + cm.index] = this.encodeQueryString(cm.value);
@@ -1101,7 +1117,7 @@ the License.
     _printParamsTable(list) {
       const map = {};
       const debugList = [];
-      for (let param in list) {
+      Object.keys(list).forEach((param) => {
         const name = this._paramsMap[param] || param;
         const value = decodeURIComponent(list[param]);
         map[param] = {
@@ -1113,7 +1129,7 @@ the License.
           value: value,
           name: name
         });
-      }
+      });
       console.table(map, ['name', 'value']);
       this.dispatchEvent(new CustomEvent('app-analytics-hit-debug', {
         detail: {
@@ -1122,17 +1138,17 @@ the License.
       }));
     }
 
-    _transport(body, offline) {
+    _transport(body) {
       if (this.disabled) {
-        return;
+        return Promise.resolve();
       }
-      offline = offline || false;
-      if (!navigator.onLine) {
+      const offline = !this.isOnline;
+      if (offline) {
         if (!this._offlineQueue) {
           this._offlineQueue = [];
         }
         this._offlineQueue.push(body);
-        return;
+        return Promise.resolve();
       }
       const init = {
         method: 'POST',
@@ -1185,6 +1201,25 @@ the License.
           return;
         }
         throw new Error('Unable to send data');
+      });
+    }
+
+    _onlineChanged(value) {
+      if (!value) {
+        return;
+      }
+      if (!this._offlineQueue || !this._offlineQueue.length) {
+        return;
+      }
+      const p = [];
+      for (let i = this._offlineQueue.length - 1; i >= 0; i--) {
+        const body = this._offlineQueue[i];
+        this._offlineQueue.splice(i, 1);
+        p[p.length] = this._transport(body);
+      }
+      return Promise.all(p)
+      .catch((cause) => {
+        console.warn(cause);
       });
     }
 

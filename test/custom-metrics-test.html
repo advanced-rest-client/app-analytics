@@ -18,10 +18,42 @@
       </template>
     </test-fixture>
 
+    <test-fixture id="UnknownNode">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <span></span>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
     <test-fixture id="dimension">
       <template>
         <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
           <app-analytics-custom type="dimension" index="2" value="test"></app-analytics-custom>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="NoType">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <app-analytics-custom index="2" value="test"></app-analytics-custom>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="NoIndex">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <app-analytics-custom type="dimension" value="test"></app-analytics-custom>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="UnknownType">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <app-analytics-custom type="other" value="test"></app-analytics-custom>
         </app-analytics>
       </template>
     </test-fixture>
@@ -33,7 +65,6 @@
         let element;
 
         setup(function(done) {
-          this.timeout(1000);
           element = fixture('metric');
           flush(() => done());
         });
@@ -44,12 +75,12 @@
         });
 
         test('Registered custom metric has index', function() {
-          var cm = element.customMetrics[0];
+          const cm = element.customMetrics[0];
           assert.equal(cm.index, 1);
         });
 
         test('Registered custom metric has value', function() {
-          var cm = element.customMetrics[0];
+          const cm = element.customMetrics[0];
           assert.equal(cm.value, 5);
         });
 
@@ -60,13 +91,21 @@
         test('Base parameters contains metric value', function() {
           assert.equal(element.baseParams.cm1, 5);
         });
+
+        test('Removes custom metric when it is removed from DOM', (done) => {
+          const node = element.querySelector('app-analytics-custom');
+          element.removeChild(node);
+          flush(() => {
+            assert.lengthOf(element.customMetrics, 0);
+            done();
+          });
+        });
       });
 
       suite('custom-dimension', function() {
-        var element;
+        let element;
 
         setup(function(done) {
-          this.timeout(1000);
           element = fixture('dimension');
           flush(() => done());
         });
@@ -77,12 +116,12 @@
         });
 
         test('Registered custom dimension has index', function() {
-          var cm = element.customDimensions[0];
+          const cm = element.customDimensions[0];
           assert.equal(cm.index, 2);
         });
 
         test('Registered custom dimension has value', function() {
-          var cm = element.customDimensions[0];
+          const cm = element.customDimensions[0];
           assert.equal(cm.value, 'test');
         });
 
@@ -92,6 +131,118 @@
 
         test('Base parameters contains dimension value', function() {
           assert.equal(element.baseParams.cd2, 'test');
+        });
+
+        test('Removes custom dimension when it is removed from DOM', (done) => {
+          const node = element.querySelector('app-analytics-custom');
+          element.removeChild(node);
+          flush(() => {
+            assert.lengthOf(element.customDimensions, 0);
+            done();
+          });
+        });
+      });
+
+      suite('Incorrect nodes', function() {
+        ['UnknownNode', 'NoType', 'NoIndex', 'UnknownType']
+        .forEach((name) => {
+          test(`Won't process added child node (${name})`, (done) => {
+            const element = fixture(name);
+            flush(() => {
+              assert.lengthOf(element.customDimensions, 0);
+              assert.lengthOf(element.customMetrics, 0);
+              done();
+            });
+          });
+
+          test(`Won't process removed child node (${name})`, (done) => {
+            const element = fixture(name);
+            flush(() => {
+              const node = element.children[0];
+              element.removeChild(node);
+              flush(() => {
+                assert.lengthOf(element.customDimensions, 0);
+                assert.lengthOf(element.customMetrics, 0);
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      suite('_customPropertyRemoved()', () => {
+        let element;
+
+        setup(function(done) {
+          element = fixture('dimension');
+          flush(() => done());
+        });
+
+        test('Custom metric app-analytics-custom-removed event', () => {
+          const node = element.children[0];
+          const spy = sinon.spy();
+          element.addEventListener('app-analytics-custom-removed', spy);
+          node.index = 1;
+          assert.isTrue(spy.called, 'Event disaptched');
+          assert.equal(spy.args[0][0].detail.type, node.type);
+          assert.equal(spy.args[0][0].detail.index, 2);
+        });
+
+        test('Calls removeCustomDimension() for dimension', () => {
+          const node = element.children[0];
+          const spy = sinon.spy(element, 'removeCustomDimension');
+          node.index = 1;
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+        });
+
+        test('Calls removeCustomMetric() for metric', () => {
+          const node = element.children[0];
+          node.type = 'metric';
+          const spy = sinon.spy(element, 'removeCustomMetric');
+          node.index = 1;
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+        });
+      });
+
+      suite('_customPropertyChanged()', () => {
+        let element;
+
+        setup(function(done) {
+          element = fixture('dimension');
+          flush(() => done());
+        });
+
+        test('Custom metric app-analytics-custom-changed event', () => {
+          const node = element.children[0];
+          const spy = sinon.spy();
+          element.addEventListener('app-analytics-custom-changed', spy);
+          node.value = 'other';
+          assert.isTrue(spy.called, 'Event disaptched');
+          assert.equal(spy.args[0][0].detail.type, node.type);
+          assert.equal(spy.args[0][0].detail.value, 'other');
+          assert.equal(spy.args[0][0].detail.name, 'dimension2');
+          assert.equal(spy.args[0][0].detail.index, 2);
+        });
+
+        test('Calls addCustomDimension() for dimension', () => {
+          const node = element.children[0];
+          const spy = sinon.spy(element, 'addCustomDimension');
+          node.value = 'other';
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+          assert.equal(spy.args[0][1], 'other');
+        });
+
+        test('Calls addCustomMetric() for metric', () => {
+          const node = element.children[0];
+          node.type = 'metric';
+          const spy = sinon.spy(element, 'addCustomMetric');
+          node.value = 'other';
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+          assert.equal(spy.args[0][1], 'other');
         });
       });
     });
