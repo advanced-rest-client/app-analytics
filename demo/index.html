@@ -1,13 +1,4 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
 
 <head>
@@ -15,7 +6,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <title>app-analytics demo</title>
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+  <link rel="import" href="../../shadycss/apply-shim.html">
+  <link rel="import" href="../../polymer/lib/elements/custom-style.html">
+  <link rel="import" href="../../polymer/lib/elements/dom-bind.html">
+  <link rel="import" href="../../polymer/lib/elements/dom-if.html">
   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../../paper-input/paper-input.html">
@@ -31,272 +26,274 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
   <link rel="import" href="../../form-action-bar/form-action-bar.html">
   <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
-
+  <link rel="import" href="../../neon-animation/web-animations.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
   <link rel="import" href="../app-analytics.html">
   <link rel="import" href="../app-analytics-custom.html">
+  <custom-style>
+    <style is="custom-style" include="demo-pages-shared-styles">
+    :host {
+      --paper-button-disabled {
+        color: red;
+      }
+      ;
+    }
 
-  <style is="custom-style" include="demo-pages-shared-styles">
-   :host {
-    --paper-button-disabled {
+    .row {
+      @apply --layout-horizontal;
+    }
+
+    .row>*:not(:last-child) {
+      margin-right: 24px;
+    }
+
+    .row>*:first-child {
+      @apply --layout-flex;
+    }
+
+    section[card] {
+      @apply --shadow-elevation-4dp;
+      padding: 20px;
+      background: white;
+      margin-bottom: 40px;
+    }
+
+    h3 {
+      @apply --paper-font-title;
+    }
+
+    h4 {
+      @apply --paper-font-caption;
+      color: rgba(0, 0, 0, 0.54);
+    }
+
+    paper-button[raised] {
+      background-color: var(--primary-color);
+      color: var(--light-primary-color);
+    }
+
+    paper-button[disabled] {
+      background: #eaeaea;
+      color: var(--disabled-text-color);
+    }
+
+    table {
+      border-collapse: collapse;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 40px;
+      @apply --paper-font-body1;
+      font-size: 15px;
+    }
+
+    thead tr {
+      vertical-align: middle;
+      height: 36px;
+      background-color: #00A1DF;
+      color: rgba(255, 255, 255, 0.87);
+    }
+
+    tr {
+      border-bottom-width: 1px;
+      border-bottom-style: solid;
+      border-bottom-color: #00A1DF;
+      background-color: #fff;
+      color: rgba(0, 0, 0, 0.87);
+    }
+
+    tr:last-of-type {
+      border-bottom-color: transparent;
+    }
+
+    table th,
+    table td {
+      padding: 8px 12px;
+    }
+
+    table td {
+      vertical-align: top;
+    }
+
+    .error {
       color: red;
     }
-  }
 
-  .vertical-section-container {
-    max-width: 800px;
-  }
+    .error-info {
+      border-bottom: 1px grey solid;
+    }
 
-  .row {
-    @apply(--layout-horizontal);
-  }
+    .error-info label {
+      display: block;
+      @apply --paper-font-caption;
+      color: rgba(0, 0, 0, 0.54);
+    }
 
-  .row>*:not(:last-child) {
-    margin-right: 24px;
-  }
+    .error-info p {
+      color: #EF5350;
+    }
 
-  .row>*:first-child {
-    @apply(--layout-flex);
-  }
+    paper-fab-menu {
+      position: fixed;
+      bottom: 84px;
+      right: 24px;
+    }
 
-  section[card] {
-    @apply(--shadow-elevation-4dp);
-    padding: 20px;
-    background: white;
-    margin-bottom: 40px;
-  }
+    .metric-row {
+      @apply --layout-horizontal;
+      @apply --layout-center;
+    }
 
-  h3 {
-    @aqpply(--paper-font-title);
-  }
+    .metric-row>*:not(:last-child) {
+      margin-right: 24px;
+    }
 
-  h4 {
-    @apply(--paper-font-caption);
-    color: rgba(0, 0, 0, 0.54);
-  }
+    .metric-row>paper-input:last-of-type {
+      @apply --layout-flex;
+    }
 
-  paper-button[raised] {
-    background-color: var(--primary-color);
-    color: var(--light-primary-color);
-  }
+    .metric-row>paper-input:first-of-type {
+      min-width: 120px;
+    }
 
-  paper-button[disabled] {
-    background: #eaeaea;
-    color: var(--disabled-text-color);
-  }
-
-  table {
-    border-collapse: collapse;
-    text-align: left;
-    width: 100%;
-    margin-bottom: 40px;
-    @apply(--paper-font-body1);
-    font-size: 15px;
-  }
-
-  thead tr {
-    vertical-align: middle;
-    height: 36px;
-    background-color: #00A1DF;
-    color: rgba(255, 255, 255, 0.87);
-  }
-
-  tr {
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: #00A1DF;
-    background-color: #fff;
-    color: rgba(0, 0, 0, 0.87);
-  }
-
-  tr:last-of-type {
-    border-bottom-color: transparent;
-  }
-
-  table th,
-  table td {
-    padding: 8px 12px;
-  }
-
-  table td {
-    vertical-align: top;
-  }
-
-  .error {
-    color: red;
-  }
-
-  .error-info {
-    border-bottom: 1px grey solid;
-  }
-
-  .error-info label {
-    display: block;
-    @apply(--paper-font-caption);
-    color: rgba(0, 0, 0, 0.54);
-  }
-
-  .error-info p {
-    color: #EF5350;
-  }
-
-  paper-fab-menu {
-    position: fixed;
-    bottom: 84px;
-    right: 24px;
-  }
-  .metric-row {
-    @apply(--layout-horizontal);
-    @apply(--layout-center);
-  }
-  .metric-row > *:not(:last-child) {
-    margin-right: 24px;
-  }
-
-  .metric-row > paper-input:last-of-type {
-    @apply(--layout-flex);
-  }
-
-  .metric-row > paper-input:first-of-type {
-    min-width: 120px;
-  }
-
-  #errorStatus {
-    color: #D32F2F;
-    font-weight: 500;
-    font-size: 17px;
-  }
-
-  </style>
+    #errorStatus {
+      color: #D32F2F;
+      font-weight: 500;
+      font-size: 17px;
+    }
+    </style>
+  </custom-style>
 </head>
 
 <body unresolved>
-  <template is="dom-bind" id="app">
-    <div class="vertical-section-container centered">
-      <h3>The `app-analytics`</h3>
-      <section card>
-        <h4>Bacsic information</h4>
-        <paper-toggle-button checked="{{debug}}">Debug (output to console)</paper-toggle-button>
-        <paper-toggle-button checked="{{debugEndpoint}}">Debug endponit (request parser)</paper-toggle-button>
-        <paper-input label="Tracking ID (UA-XXXX-Y)" value="{{trackingId}}"></paper-input>
-        <div class="row">
-          <paper-input label="App name" value="{{appName}}"></paper-input>
-          <paper-input label="App version" value="{{appVersion}}" pattern="^\d+\.\d+\.\d+([\-a-zA-Z0-9]+)?$" auto-validate></paper-input>
-        </div>
-      </section>
-      <section card>
-        <h4>Hit type</h4>
-        <paper-dropdown-menu label="Select hit type">
-          <paper-listbox class="dropdown-content" selected="{{hitType}}" attr-for-selected="data-value">
-            <paper-item data-value="screenview">Screen view</paper-item>
-            <paper-item data-value="event">Event</paper-item>
-            <paper-item data-value="social">Social</paper-item>
-            <paper-item data-value="exception">Exception</paper-item>
-            <paper-item data-value="timing">Timing data</paper-item>
-          </paper-listbox>
-        </paper-dropdown-menu>
-        <iron-pages selected="{{hitType}}" attr-for-selected="data-value">
-          <section data-value="screenview">
-            <paper-input label="Screen name" value="{{screenName}}"></paper-input>
-          </section>
-          <section data-value="event">
-            <paper-input label="Category" value="{{eventCategory}}"></paper-input>
-            <paper-input label="Action" value="{{eventAction}}"></paper-input>
-            <paper-input label="Label" value="{{eventLabel}}"></paper-input>
-          </section>
-          <section data-value="social">
-            <paper-input label="Network" value="{{socialNetwork}}"></paper-input>
-            <paper-input label="Action" value="{{socialAction}}"></paper-input>
-            <paper-input label="Target" value="{{socialTarget}}"></paper-input>
-          </section>
-          <section data-value="exception">
-            <paper-input label="Description" value="{{exceptionDescription}}"></paper-input>
-            <paper-checkbox checked="{{exceptionFatal}}">The exception is fatal</paper-checkbox>
-          </section>
-          <section data-value="timing">
-            <paper-input label="Category" value="{{timingCategory}}"></paper-input>
-            <paper-input label="variable" value="{{timingVariable}}"></paper-input>
-            <paper-input label="time" type="datetime-local" value="{{timingTime}}"></paper-input>
-            <paper-input label="label" value="{{timingLabel}}"></paper-input>
-          </section>
-        </iron-pages>
-      </section>
-      <section card hidden="[[!hasCustomData]]">
-        <h4>Custom data</h4>
-        <template is="dom-if" if="[[customMetrics.length]]">
-          <h4>Custom metrics</h4>
-          <template is="dom-repeat" items="{{customMetrics}}" id="metricsList">
-            <div class="metric-row">
-              <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
-              <paper-input label="Value" value="{{item.value}}" type="number"></paper-input>
-              <paper-icon-button on-tap="_removeMetric" icon="remove" title="Remove custom metric"></paper-icon-button>
-            </div>
+  <dom-bind id="app">
+    <template is="dom-bind">
+      <div class="vertical-section-container centered">
+        <h3>The `app-analytics`</h3>
+        <section card>
+          <h4>Bacsic information</h4>
+          <paper-toggle-button checked="{{debug}}">Debug (output to console)</paper-toggle-button>
+          <paper-toggle-button checked="{{debugEndpoint}}">Debug endponit (request parser)</paper-toggle-button>
+          <paper-input label="Tracking ID (UA-XXXX-Y)" value="{{trackingId}}"></paper-input>
+          <div class="row">
+            <paper-input label="App name" value="{{appName}}"></paper-input>
+            <paper-input label="App version" value="{{appVersion}}" pattern="^\d+\.\d+\.\d+([\-a-zA-Z0-9]+)?$" auto-validate></paper-input>
+          </div>
+        </section>
+        <section card>
+          <h4>Hit type</h4>
+          <paper-dropdown-menu label="Select hit type">
+            <paper-listbox slot="dropdown-content" selected="{{hitType}}" attr-for-selected="data-value">
+              <paper-item data-value="screenview">Screen view</paper-item>
+              <paper-item data-value="event">Event</paper-item>
+              <paper-item data-value="social">Social</paper-item>
+              <paper-item data-value="exception">Exception</paper-item>
+              <paper-item data-value="timing">Timing data</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+          <iron-pages selected="{{hitType}}" attr-for-selected="data-value">
+            <section data-value="screenview">
+              <paper-input label="Screen name" value="{{screenName}}"></paper-input>
+            </section>
+            <section data-value="event">
+              <paper-input label="Category" value="{{eventCategory}}"></paper-input>
+              <paper-input label="Action" value="{{eventAction}}"></paper-input>
+              <paper-input label="Label" value="{{eventLabel}}"></paper-input>
+            </section>
+            <section data-value="social">
+              <paper-input label="Network" value="{{socialNetwork}}"></paper-input>
+              <paper-input label="Action" value="{{socialAction}}"></paper-input>
+              <paper-input label="Target" value="{{socialTarget}}"></paper-input>
+            </section>
+            <section data-value="exception">
+              <paper-input label="Description" value="{{exceptionDescription}}"></paper-input>
+              <paper-checkbox checked="{{exceptionFatal}}">The exception is fatal</paper-checkbox>
+            </section>
+            <section data-value="timing">
+              <paper-input label="Category" value="{{timingCategory}}"></paper-input>
+              <paper-input label="variable" value="{{timingVariable}}"></paper-input>
+              <paper-input label="time" type="datetime-local" value="{{timingTime}}"></paper-input>
+              <paper-input label="label" value="{{timingLabel}}"></paper-input>
+            </section>
+          </iron-pages>
+        </section>
+        <section card hidden="[[!hasCustomData]]">
+          <h4>Custom data</h4>
+          <template is="dom-if" if="[[customMetrics.length]]">
+            <h4>Custom metrics</h4>
+            <template is="dom-repeat" items="{{customMetrics}}" id="metricsList">
+              <div class="metric-row">
+                <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
+                <paper-input label="Value" value="{{item.value}}" type="number"></paper-input>
+                <paper-icon-button on-tap="_removeMetric" icon="remove" title="Remove custom metric"></paper-icon-button>
+              </div>
+            </template>
           </template>
-        </template>
-        <template is="dom-if" if="[[customDimensions.length]]">
-          <h4>Custom dimensions</h4>
-          <template is="dom-repeat" items="{{customDimensions}}" id="dimensionsList">
-            <div class="metric-row">
-              <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
-              <paper-input label="Value" value="{{item.value}}"></paper-input>
-              <paper-icon-button on-tap="_removeDimension" icon="remove" title="Remove custom dimension"></paper-icon-button>
-            </div>
+          <template is="dom-if" if="[[customDimensions.length]]">
+            <h4>Custom dimensions</h4>
+            <template is="dom-repeat" items="{{customDimensions}}" id="dimensionsList">
+              <div class="metric-row">
+                <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
+                <paper-input label="Value" value="{{item.value}}"></paper-input>
+                <paper-icon-button on-tap="_removeDimension" icon="remove" title="Remove custom dimension"></paper-icon-button>
+              </div>
+            </template>
           </template>
-        </template>
-      </section>
-      <section card hidden="[[!logs.length]]">
-        <h4>Log</h4>
-        <template is="dom-repeat" items="[[logs]]" index-as="index">
-          <template is="dom-if" if="[[item.isHit]]" restamp="true">
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Param</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template is="dom-repeat" items="[[item.value]]">
+        </section>
+        <section card hidden="[[!logs.length]]">
+          <h4>Log</h4>
+          <template is="dom-repeat" items="[[logs]]" index-as="index">
+            <template is="dom-if" if="[[item.isHit]]" restamp="true">
+              <table>
+                <thead>
                   <tr>
-                    <td>[[item.name]]</td>
-                    <td>[[item.param]]</td>
-                    <td>[[item.value]]</td>
+                    <th>Name</th>
+                    <th>Param</th>
+                    <th>Value</th>
                   </tr>
+                </thead>
+                <tbody>
+                  <template is="dom-repeat" items="[[item.value]]">
+                    <tr>
+                      <td>[[item.name]]</td>
+                      <td>[[item.param]]</td>
+                      <td>[[item.value]]</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+            <template is="dom-if" if="[[item.isValidation]]" restamp="true">
+              <template is="dom-repeat" items="[[item.value.hitParsingResult]]" index-as="index">
+                <p class="error" hidden$="[[item.valid]]">The hit <code>[[item.hit]]</code> is invalid</p>
+                <template is="dom-repeat" items="[[item.parserMessage]]" index-as="index">
+                  <div class="error-info">
+                    <label>[[item.parameter]] ([[_getParamName(item.parameter)]])</label>
+                    <p>[[item.description]]</p>
+                  </div>
                 </template>
-              </tbody>
-            </table>
-          </template>
-          <template is="dom-if" if="[[item.isValidation]]" restamp="true">
-            <template is="dom-repeat" items="[[item.value.hitParsingResult]]" index-as="index">
-              <p class="error" hidden$="[[item.valid]]">The hit <code>[[item.hit]]</code> is invalid</p>
-              <template is="dom-repeat" items="[[item.parserMessage]]" index-as="index">
-                <div class="error-info">
-                  <label>[[item.parameter]] ([[_getParamName(item.parameter)]])</label>
-                  <p>[[item.description]]</p>
-                </div>
               </template>
             </template>
           </template>
-        </template>
-      </section>
-      <paper-fab-menu color="#2196F3" icon="add" position="vertical">
-        <paper-fab-menu-item color="#9C27B0" tooltip="Custom metric" on-tap="addCustomMetric" label="12" ></paper-fab-menu-item>
-        <paper-fab-menu-item color="#2196F3" tooltip="Custom dimension" on-tap="addCustomDimension" icon="timeline" ></paper-fab-menu-item>
-      </paper-fab-menu>
-      <form-action-bar elevation="5">
-        <div id="errorStatus" prefix hidden>Issue found in last hit</div>
-        <paper-button raised disabled$="[[!hitType]]" on-tap="send">Send hit</paper-button>
-      </form-action-bar>
-      <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug="[[debug]]" debug-endpoint="[[debugEndpoint]]">
-        <template is="dom-repeat" items="[[customMetrics]]">
-          <app-analytics-custom type="metric" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
-        </template>
-        <template is="dom-repeat" items="[[customDimensions]]">
-          <app-analytics-custom type="dimension" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
-        </template>
-      </app-analytics>
-    </div>
-  </template>
+        </section>
+        <paper-fab-menu color="#2196F3" icon="add" position="vertical">
+          <paper-fab-menu-item color="#9C27B0" title="Custom metric" on-tap="addCustomMetric" label="12"></paper-fab-menu-item>
+          <paper-fab-menu-item color="#2196F3" title="Custom dimension" on-tap="addCustomDimension" icon="timeline"></paper-fab-menu-item>
+        </paper-fab-menu>
+        <form-action-bar elevation="5">
+          <div id="errorStatus" prefix hidden>Issue found in last hit</div>
+          <paper-button raised disabled$="[[!hitType]]" on-tap="send">Send hit</paper-button>
+        </form-action-bar>
+        <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug="[[debug]]" debug-endpoint="[[debugEndpoint]]">
+          <template is="dom-repeat" items="[[customMetrics]]">
+            <app-analytics-custom type="metric" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
+          </template>
+          <template is="dom-repeat" items="[[customDimensions]]">
+            <app-analytics-custom type="dimension" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
+          </template>
+        </app-analytics>
+      </div>
+    </template>
+  </dom-bind>
   <script>
   (function(app) {
     'use strict';
@@ -355,7 +352,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           detail.value = new Date(app.timingTime).getTime();
           break;
       }
-      app.fire('send-analytics', detail);
+      app.dispatchEvent(new CustomEvent('send-analytics', {
+        bubbles: true,
+        composed: true,
+        detail: detail
+      }));
     };
     app._getParamName = function(parameter) {
       return app.$.analytics._paramsMap[parameter] || 'unknown name';
@@ -407,14 +408,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         value: e.detail.debug
       });
     });
-    window.addEventListener('WebComponentsReady', function(e) {
-
-    });
-    var detail = {
+    const detail = {
       type: 'screenview',
       name: 'Init'
     };
-    app.fire('send-analytics', detail);
+    app.dispatchEvent(new CustomEvent('send-analytics', {
+      bubbles: true,
+      composed: true,
+      detail: detail
+    }));
   })(document.querySelector('#app'));
   </script>
 </body>

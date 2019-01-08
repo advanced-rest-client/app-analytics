@@ -1,24 +1,10 @@
 <!doctype html>
-<!--
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
--->
 <html>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-    <script src="../../iron-test-helpers/mock-interactions.js"></script>
-
-    <!-- Step 1: import the element to test -->
     <link rel="import" href="../app-analytics.html">
     <link rel="import" href="../app-analytics-custom.html">
   </head>
@@ -32,6 +18,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="UnknownNode">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <span></span>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
     <test-fixture id="dimension">
       <template>
         <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
@@ -40,23 +34,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </test-fixture>
 
+    <test-fixture id="NoType">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <app-analytics-custom index="2" value="test"></app-analytics-custom>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="NoIndex">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <app-analytics-custom type="dimension" value="test"></app-analytics-custom>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="UnknownType">
+      <template>
+        <app-analytics tracking-id="UA-71458341-4" app-name="app-analytics-test" app-version="dev" data-source="app-analytics-test-element">
+          <app-analytics-custom type="other" value="test"></app-analytics-custom>
+        </app-analytics>
+      </template>
+    </test-fixture>
+
     <script>
     /* global fixture, assert */
     suite('Custom data', function() {
       suite('custom-metrics', function() {
-        var element;
-
-        suiteTeardown(function() {
-          var db = new PouchDB('analytics-meta');
-          return db.destroy();
-        });
+        let element;
 
         setup(function(done) {
-          this.timeout(1000);
           element = fixture('metric');
-          element.addEventListener('app-analytics-ready', function() {
-            setTimeout(done, 1);
-          });
+          flush(() => done());
         });
 
         test('Should register custom metric', function() {
@@ -65,12 +75,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('Registered custom metric has index', function() {
-          var cm = element.customMetrics[0];
+          const cm = element.customMetrics[0];
           assert.equal(cm.index, 1);
         });
 
         test('Registered custom metric has value', function() {
-          var cm = element.customMetrics[0];
+          const cm = element.customMetrics[0];
           assert.equal(cm.value, 5);
         });
 
@@ -81,22 +91,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('Base parameters contains metric value', function() {
           assert.equal(element.baseParams.cm1, 5);
         });
+
+        test('Removes custom metric when it is removed from DOM', (done) => {
+          const node = element.querySelector('app-analytics-custom');
+          element.removeChild(node);
+          flush(() => {
+            assert.lengthOf(element.customMetrics, 0);
+            done();
+          });
+        });
       });
 
       suite('custom-dimension', function() {
-        var element;
-
-        suiteTeardown(function() {
-          var db = new PouchDB('analytics-meta');
-          return db.destroy();
-        });
+        let element;
 
         setup(function(done) {
-          this.timeout(1000);
           element = fixture('dimension');
-          element.addEventListener('app-analytics-ready', function() {
-            setTimeout(done, 1);
-          });
+          flush(() => done());
         });
 
         test('Should register custom dimension', function() {
@@ -105,12 +116,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         test('Registered custom dimension has index', function() {
-          var cm = element.customDimensions[0];
+          const cm = element.customDimensions[0];
           assert.equal(cm.index, 2);
         });
 
         test('Registered custom dimension has value', function() {
-          var cm = element.customDimensions[0];
+          const cm = element.customDimensions[0];
           assert.equal(cm.value, 'test');
         });
 
@@ -120,6 +131,118 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('Base parameters contains dimension value', function() {
           assert.equal(element.baseParams.cd2, 'test');
+        });
+
+        test('Removes custom dimension when it is removed from DOM', (done) => {
+          const node = element.querySelector('app-analytics-custom');
+          element.removeChild(node);
+          flush(() => {
+            assert.lengthOf(element.customDimensions, 0);
+            done();
+          });
+        });
+      });
+
+      suite('Incorrect nodes', function() {
+        ['UnknownNode', 'NoType', 'NoIndex', 'UnknownType']
+        .forEach((name) => {
+          test(`Won't process added child node (${name})`, (done) => {
+            const element = fixture(name);
+            flush(() => {
+              assert.lengthOf(element.customDimensions, 0);
+              assert.lengthOf(element.customMetrics, 0);
+              done();
+            });
+          });
+
+          test(`Won't process removed child node (${name})`, (done) => {
+            const element = fixture(name);
+            flush(() => {
+              const node = element.children[0];
+              element.removeChild(node);
+              flush(() => {
+                assert.lengthOf(element.customDimensions, 0);
+                assert.lengthOf(element.customMetrics, 0);
+                done();
+              });
+            });
+          });
+        });
+      });
+
+      suite('_customPropertyRemoved()', () => {
+        let element;
+
+        setup(function(done) {
+          element = fixture('dimension');
+          flush(() => done());
+        });
+
+        test('Custom metric app-analytics-custom-removed event', () => {
+          const node = element.children[0];
+          const spy = sinon.spy();
+          element.addEventListener('app-analytics-custom-removed', spy);
+          node.index = 1;
+          assert.isTrue(spy.called, 'Event disaptched');
+          assert.equal(spy.args[0][0].detail.type, node.type);
+          assert.equal(spy.args[0][0].detail.index, 2);
+        });
+
+        test('Calls removeCustomDimension() for dimension', () => {
+          const node = element.children[0];
+          const spy = sinon.spy(element, 'removeCustomDimension');
+          node.index = 1;
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+        });
+
+        test('Calls removeCustomMetric() for metric', () => {
+          const node = element.children[0];
+          node.type = 'metric';
+          const spy = sinon.spy(element, 'removeCustomMetric');
+          node.index = 1;
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+        });
+      });
+
+      suite('_customPropertyChanged()', () => {
+        let element;
+
+        setup(function(done) {
+          element = fixture('dimension');
+          flush(() => done());
+        });
+
+        test('Custom metric app-analytics-custom-changed event', () => {
+          const node = element.children[0];
+          const spy = sinon.spy();
+          element.addEventListener('app-analytics-custom-changed', spy);
+          node.value = 'other';
+          assert.isTrue(spy.called, 'Event disaptched');
+          assert.equal(spy.args[0][0].detail.type, node.type);
+          assert.equal(spy.args[0][0].detail.value, 'other');
+          assert.equal(spy.args[0][0].detail.name, 'dimension2');
+          assert.equal(spy.args[0][0].detail.index, 2);
+        });
+
+        test('Calls addCustomDimension() for dimension', () => {
+          const node = element.children[0];
+          const spy = sinon.spy(element, 'addCustomDimension');
+          node.value = 'other';
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+          assert.equal(spy.args[0][1], 'other');
+        });
+
+        test('Calls addCustomMetric() for metric', () => {
+          const node = element.children[0];
+          node.type = 'metric';
+          const spy = sinon.spy(element, 'addCustomMetric');
+          node.value = 'other';
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0], 2);
+          assert.equal(spy.args[0][1], 'other');
         });
       });
     });
