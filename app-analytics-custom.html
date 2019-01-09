@@ -11,27 +11,98 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
-<link rel="import" href="../polymer/polymer.html">
-<!--
-`<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
-Simply put this element as a child of the `<app-analytics>` element and all hits sent
-to the GA server will contain this metric.
-
-### Example
-```
-<app-analytics tracking-id="UA-XXXXXXX">
-  <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
-</app-analytics>
-```
-It will set a custom metric of index 1 to every hit with value 5.
-
-@group Logic Elements
-@element app-analytics-custom
-@demo demo/index.html
--->
+<link rel="import" href="../polymer/polymer-element.html">
 <script>
-Polymer({
-  is: 'app-analytics-custom',
+/**
+ * `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
+ * Simply put this element as a child of the `<app-analytics>` element and all hits sent
+ * to the GA server will contain this metric.
+ *
+ * ### Example
+ *
+ * ```html
+ * <app-analytics tracking-id="UA-XXXXXXX">
+ *  <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+ * </app-analytics>
+ * ```
+ *
+ * It will set a custom metric of index 1 to every hit with value 5.
+ *
+ * @customElement
+ * @polymer
+ * @demo demo/index.html
+ * @memberof ArcElements
+ */
+class AppAnalyticsCustom extends Polymer.Element {
+  static get is() { return 'app-analytics-custom'; }
+  static get properties() {
+    return {
+      // Type of custom value. Either metric or dimmension
+      type: String,
+      // Index of the custom metric. It can be found in Google Analytics admin panel
+      index: {
+        type: Number,
+        observer: '_indexObserver'
+      },
+      // The value of the metric or dimension. Type of this attribute depends on the `type`.
+      value: String,
+      // Full name of the metric/dimension.
+      fullName: {
+        type: String,
+        readOnly: true
+      }
+    };
+  }
+
+  static get observers() {
+    return [
+      '_customChanged(type,index,value)'
+    ];
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._customChanged(this.type, this.index, this.value);
+  }
+
+  _indexObserver(index, oldIndex) {
+    if (oldIndex) {
+      this.dispatchEvent(new CustomEvent('app-analytics-custom-removed', {
+        bubbles: true,
+        composed: true,
+        detail: {
+          index: oldIndex,
+          type: this.type
+        }
+      }));
+    }
+  }
+
+  _customChanged(type, index, value) {
+    if (!index) {
+      return;
+    }
+    let name = '';
+    if (type === 'metric') {
+      name += 'metric';
+    } else if (type === 'dimension') {
+      name += 'dimension';
+    } else {
+      return;
+    }
+    name += String(index);
+    this._setFullName(name);
+    this.dispatchEvent(new CustomEvent('app-analytics-custom-changed', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        name,
+        value,
+        type,
+        index
+      }
+    }));
+  }
   /**
    * Fires when the metric/dimension has been set and should inform the app-analytics that it
    * should use this data in hits.
@@ -48,61 +119,6 @@ Polymer({
    * @event app-analytics-custom-removed
    * @param {String} name Name of the custom property to be removed.
    */
-  properties: {
-    // Type of custom value. Either metric or dimmension
-    type: String,
-    // Index of the custom metric. It can be found in Google Analytics admin panel
-    index: {
-      type: Number,
-      observer: '_indexObserver'
-    },
-    // The value of the metric or dimension. Type of this attribute depends on the `type`.
-    value: String,
-    // Full name of the metric/dimension.
-    fullName: {
-      type: String,
-      readOnly: true
-    }
-  },
-
-  observers: [
-    '_customChanged(type,index,value)'
-  ],
-
-  attached: function() {
-    // _customChanged could work before the element was attached to DOM.
-    this._customChanged(this.type, this.index, this.value);
-  },
-
-  _indexObserver: function(index, oldIndex) {
-    if (oldIndex) {
-      this.fire('app-analytics-custom-removed', {
-        index: oldIndex,
-        type: this.type
-      });
-    }
-  },
-
-  _customChanged: function(type, index, value) {
-    if (!index) {
-      return;
-    }
-    var name = '';
-    if (type === 'metric') {
-      name += 'metric';
-    } else if (type === 'dimension') {
-      name += 'dimension';
-    } else {
-      return;
-    }
-    name += String(index);
-    this._setFullName(name);
-    this.fire('app-analytics-custom-changed', {
-      name: name,
-      value: value,
-      type: type,
-      index: index
-    });
-  }
-});
+}
+window.customElements.define(AppAnalyticsCustom.is, AppAnalyticsCustom);
 </script>
