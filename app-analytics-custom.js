@@ -1,4 +1,4 @@
-<!--
+/**
 @license
 Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -10,9 +10,8 @@ distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
--->
-<link rel="import" href="../polymer/polymer-element.html">
-<script>
+*/
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 /**
  * `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
  * Simply put this element as a child of the `<app-analytics>` element and all hits sent
@@ -33,8 +32,7 @@ the License.
  * @demo demo/index.html
  * @memberof ArcElements
  */
-class AppAnalyticsCustom extends Polymer.Element {
-  static get is() { return 'app-analytics-custom'; }
+class AppAnalyticsCustom extends PolymerElement {
   static get properties() {
     return {
       // Type of custom value. Either metric or dimmension
@@ -120,5 +118,4 @@ class AppAnalyticsCustom extends Polymer.Element {
    * @param {String} name Name of the custom property to be removed.
    */
 }
-window.customElements.define(AppAnalyticsCustom.is, AppAnalyticsCustom);
-</script>
+window.customElements.define('app-analytics-custom', AppAnalyticsCustom);

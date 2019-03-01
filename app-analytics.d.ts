@@ -5,17 +5,18 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   app-analytics.html
+ *   app-analytics.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../polymer/types/lib/utils/flattened-nodes-observer.d.ts" />
-/// <reference path="../uuid-generator/uuid-generator.d.ts" />
-/// <reference path="../connectivity-state/connectivity-state.d.ts" />
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
+
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+
+import {FlattenedNodesObserver} from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
 
 declare namespace ArcElements {
 
@@ -178,7 +179,7 @@ declare namespace ArcElements {
    * document.dispatchEvent(event);
    * ```
    */
-  class AppAnalytics extends Polymer.Element {
+  class AppAnalytics extends PolymerElement {
     readonly cidKey: any;
     readonly disabledKey: any;
 
@@ -593,6 +594,9 @@ declare namespace ArcElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "app-analytics": ArcElements.AppAnalytics;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "app-analytics": ArcElements.AppAnalytics;
+  }
 }

@@ -5,14 +5,14 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   app-analytics-custom.html
+ *   app-analytics-custom.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/polymer-element.d.ts" />
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
 declare namespace ArcElements {
 
@@ -31,7 +31,7 @@ declare namespace ArcElements {
    *
    * It will set a custom metric of index 1 to every hit with value 5.
    */
-  class AppAnalyticsCustom extends Polymer.Element {
+  class AppAnalyticsCustom extends PolymerElement {
 
     /**
      * Type of custom value. Either metric or dimmension
@@ -58,6 +58,9 @@ declare namespace ArcElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "app-analytics-custom": ArcElements.AppAnalyticsCustom;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "app-analytics-custom": ArcElements.AppAnalyticsCustom;
+  }
 }
