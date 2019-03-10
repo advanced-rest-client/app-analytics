@@ -1,10 +1,10 @@
 {
   "name": "@advanced-rest-client/app-analytics",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "Apache-2.0",
   "description": "An element that support Google Analytics analysis",
   "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.6.0"
+    "@polymer/gen-typescript-declarations": "^1.6.1"
   },
   "private": false,
   "main": "app-analytics.html",

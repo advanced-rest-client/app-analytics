@@ -426,6 +426,22 @@ the License.
           }
         },
         /**
+         * True if current environment has localStorage suppport.
+         * Chrome apps do not have localStorage property.
+         */
+        hasLocalStorage: {
+          type: Boolean,
+          readOnly: true,
+          value: function() {
+            try {
+              localStorage.getItem('test');
+              return true;
+            } catch (_) {
+              return false;
+            }
+          }
+        },
+        /**
          * If set to true it will prints debug messages into the console.
          */
         debug: Boolean,
@@ -574,7 +590,7 @@ the License.
      * Restores data stored in localStorage.
      */
     _restoreConfiguration() {
-      if (this.clientId) {
+      if (this.clientId || !this.hasLocalStorage) {
         return;
       }
       let disabled = localStorage.getItem(this.disabledKey);
@@ -595,6 +611,9 @@ the License.
      * @param {String} cid New client id value
      */
     _cidChanged(cid) {
+      if (!this.hasLocalStorage) {
+        return;
+      }
       cid = cid || '';
       let localCid = localStorage.getItem(this.cidKey);
       if (cid !== localCid) {
@@ -610,6 +629,9 @@ the License.
      * @param {Boolean} state
      */
     _disabledChanged(state) {
+      if (!this.hasLocalStorage) {
+        return;
+      }
       let localState = localStorage.getItem(this.disabledKey);
       if (localState !== String(state)) {
         localStorage.setItem(this.disabledKey, state);
