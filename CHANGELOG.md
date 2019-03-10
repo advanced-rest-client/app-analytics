@@ -275,3 +275,17 @@
 
 
 
+## [2.0.1](https://github.com/advanced-rest-client/app-analytics/compare/1.0.15...2.0.1) (2019-03-10)
+
+
+### Fix
+
+* Fixing configuration when disabled/cid changes ([5b2d6e58b833d62e99f7347dad125a937fdc2d2b](https://github.com/advanced-rest-client/app-analytics/commit/5b2d6e58b833d62e99f7347dad125a937fdc2d2b))
+
+### Update
+
+* Adding type check for localStorage ([040004f363f0374aa05893e8590db610ed6edb00](https://github.com/advanced-rest-client/app-analytics/commit/040004f363f0374aa05893e8590db610ed6edb00))
+* Removed support for disabling GA. Remove element from the DOM instead. ([d6d04a56d63495b3b724f53eb355ccab7ccd46ef](https://github.com/advanced-rest-client/app-analytics/commit/d6d04a56d63495b3b724f53eb355ccab7ccd46ef))
+
+
+
