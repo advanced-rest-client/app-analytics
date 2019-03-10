@@ -611,6 +611,7 @@ the License.
      * @param {String} cid New client id value
      */
     _cidChanged(cid) {
+      this._configureBaseParams();
       if (!this.hasLocalStorage) {
         return;
       }
@@ -619,7 +620,6 @@ the License.
       if (cid !== localCid) {
         localStorage.setItem(this.cidKey, cid);
       }
-      this._configureBaseParams();
     }
     /**
      * Updates state of `disabled` property in local storage.
@@ -629,16 +629,16 @@ the License.
      * @param {Boolean} state
      */
     _disabledChanged(state) {
+      if (!state) {
+        this._restoreConfiguration();
+        this._configureBaseParams();
+      }
       if (!this.hasLocalStorage) {
         return;
       }
       let localState = localStorage.getItem(this.disabledKey);
       if (localState !== String(state)) {
         localStorage.setItem(this.disabledKey, state);
-      }
-      if (!state) {
-        this._restoreConfiguration();
-        this._configureBaseParams();
       }
     }
     /**
