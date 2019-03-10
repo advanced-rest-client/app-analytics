@@ -425,6 +425,28 @@ class AppAnalytics extends PolymerElement {
         }
       },
       /**
+       * True if current environment has localStorage suppport.
+       * Chrome apps do not have localStorage property.
+       */
+      hasLocalStorage: {
+        type: Boolean,
+        readOnly: true,
+        value: function() {
+          /* global chrome */
+          if (typeof chrome !== 'undefined' && chrome.i18n) {
+            // Chrome apps have `chrome.i18n` property, regular website doesn't.
+            // This is to avoid annoying warning message in Chrome app.
+            return false;
+          }
+          try {
+            localStorage.getItem('test');
+            return true;
+          } catch (_) {
+            return false;
+          }
+        }
+      },
+      /**
        * If set to true it will prints debug messages into the console.
        */
       debug: Boolean,
@@ -573,7 +595,7 @@ class AppAnalytics extends PolymerElement {
    * Restores data stored in localStorage.
    */
   _restoreConfiguration() {
-    if (this.clientId) {
+    if (this.clientId || !this.hasLocalStorage) {
       return;
     }
     let disabled = localStorage.getItem(this.disabledKey);
@@ -594,12 +616,15 @@ class AppAnalytics extends PolymerElement {
    * @param {String} cid New client id value
    */
   _cidChanged(cid) {
+    this._configureBaseParams();
+    if (!this.hasLocalStorage) {
+      return;
+    }
     cid = cid || '';
     let localCid = localStorage.getItem(this.cidKey);
     if (cid !== localCid) {
       localStorage.setItem(this.cidKey, cid);
     }
-    this._configureBaseParams();
   }
   /**
    * Updates state of `disabled` property in local storage.
@@ -609,13 +634,16 @@ class AppAnalytics extends PolymerElement {
    * @param {Boolean} state
    */
   _disabledChanged(state) {
-    let localState = localStorage.getItem(this.disabledKey);
-    if (localState !== String(state)) {
-      localStorage.setItem(this.disabledKey, state);
-    }
     if (!state) {
       this._restoreConfiguration();
       this._configureBaseParams();
+    }
+    if (!this.hasLocalStorage) {
+      return;
+    }
+    let localState = localStorage.getItem(this.disabledKey);
+    if (localState !== String(state)) {
+      localStorage.setItem(this.disabledKey, state);
     }
   }
   /**
