@@ -11,7 +11,7 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
+import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
 /**
  * `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
  * Simply put this element as a child of the `<app-analytics>` element and all hits sent

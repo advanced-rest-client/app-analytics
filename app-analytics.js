@@ -11,11 +11,11 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
-import {FlattenedNodesObserver} from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
-import '@advanced-rest-client/uuid-generator/uuid-generator.js';
-import '@advanced-rest-client/connectivity-state/connectivity-state.js';
+import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
+import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
+import {FlattenedNodesObserver} from '../../@polymer/polymer/lib/utils/flattened-nodes-observer.js';
+import '../../@advanced-rest-client/uuid-generator/uuid-generator.js';
+import '../../@advanced-rest-client/connectivity-state/connectivity-state.js';
 /**
  * `<app-analytics>` An element that support Google Analytics analysis
  *
