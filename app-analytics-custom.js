@@ -11,7 +11,6 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
 /**
  * `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
  * Simply put this element as a child of the `<app-analytics>` element and all hits sent
@@ -32,42 +31,110 @@ import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
  * @demo demo/index.html
  * @memberof ArcElements
  */
-class AppAnalyticsCustom extends PolymerElement {
-  static get properties() {
-    return {
-      // Type of custom value. Either metric or dimmension
-      type: String,
-      // Index of the custom metric. It can be found in Google Analytics admin panel
-      index: {
-        type: Number,
-        observer: '_indexObserver'
-      },
-      // The value of the metric or dimension. Type of this attribute depends on the `type`.
-      value: String,
-      // Full name of the metric/dimension.
-      fullName: {
-        type: String,
-        readOnly: true
-      }
-    };
-  }
-
-  static get observers() {
+class AppAnalyticsCustom extends HTMLElement {
+  static get observedAttributes() {
     return [
-      '_customChanged(type,index,value)'
+      'type',
+      'index',
+      'value'
     ];
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    this[name] = newValue;
+  }
+  /**
+   * @return {String} Type of custom value. Either `metric` or `dimension`.
+   */
+  get type() {
+    return this._type;
+  }
+
+  set type(value) {
+    const old = this._type;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+    } else {
+      this.removeAttribute('type');
+    }
+    this._type = value;
+    if (value) {
+      this.setAttribute('type', value);
+    }
+    this._customChanged();
+  }
+  /**
+   * @return {Number} Index of the custom metric. It can be found in Google Analytics admin panel.
+   */
+  get index() {
+    return this._index;
+  }
+
+  set index(value) {
+    const old = this._index;
+    if (isNaN(value)) {
+      this._index = undefined;
+      this.removeAttribute('index');
+    } else {
+      value = Number(value);
+      if (old === value) {
+        return;
+      }
+      this._index = value;
+      this.setAttribute('index', String(value));
+    }
+    this._indexObserver(value, old);
+    this._customChanged();
+  }
+  /**
+   * Type of this attribute depends on the `type` property. It can be numeric or string value.
+   * Internally the element keeps all values as string and the value is cast to
+   * a number if represents numeric value.
+   * @return {String|Number} The value of the metric or dimension.
+   */
+  get value() {
+    const v = this._value;
+    if (isNaN(v)) {
+      return v;
+    }
+    return Number(v);
+  }
+
+  set value(value) {
+    const old = this._value;
+    if (old === value) {
+      return;
+    }
+    if (value || value === 0) {
+      value = String(value);
+    } else {
+      this.removeAttribute('value');
+    }
+    this._value = value;
+    if (value) {
+      this.setAttribute('value', value);
+    }
+    this._customChanged();
+  }
+  /**
+   * @return {String} Full name of the metric/dimension.
+   */
+  get fullName() {
+    return this._fullName;
+  }
+
   connectedCallback() {
-    super.connectedCallback();
     this._customChanged(this.type, this.index, this.value);
   }
 
   _indexObserver(index, oldIndex) {
-    if (oldIndex) {
+    if (oldIndex || oldIndex === 0) {
       this.dispatchEvent(new CustomEvent('app-analytics-custom-removed', {
-        bubbles: true,
         composed: true,
+        bubbles: true,
         detail: {
           index: oldIndex,
           type: this.type
@@ -89,9 +156,8 @@ class AppAnalyticsCustom extends PolymerElement {
       return;
     }
     name += String(index);
-    this._setFullName(name);
+    this._fullName = name;
     this.dispatchEvent(new CustomEvent('app-analytics-custom-changed', {
-      bubbles: true,
       composed: true,
       detail: {
         name,
