@@ -1,19 +1,22 @@
 {
   "name": "@advanced-rest-client/app-analytics",
-  "version": "2.0.1",
-  "license": "Apache-2.0",
   "description": "An element that support Google Analytics analysis",
-  "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.6.1"
-  },
-  "private": false,
-  "main": "app-analytics.html",
-  "scripts": {
-    "lint": "polymer lint app-analytics.html",
-    "test-sauce": "polymer test --plugin sauce --job-name \"app-analytics:local-test\"",
-    "test": "polymer test --plugin local",
-    "update-types": "gen-typescript-declarations --deleteExisting --outDir ."
-  },
+  "version": "3.0.0",
+  "license": "Apache-2.0",
+  "main": "app-analytics.js",
+  "keywords": [
+    "web-components",
+    "google-analytics",
+    "analytics"
+  ],
+  "authors": [
+    "Pawel Psztyc",
+    "The Advanced REST client authors <arc@mulesoft.com>"
+  ],
+  "contributors": [
+    "Pawel Psztyc",
+    "The Advanced REST client authors <arc@mulesoft.com>"
+  ],
   "repository": {
     "type": "git",
     "url": "git://github.com/advanced-rest-client/app-analytics.git"
@@ -22,8 +25,61 @@
     "url": "https://github.com/advanced-rest-client/app-analytics/issues",
     "email": "arc@mulesoft.com"
   },
-  "authors": [
-    "Pawel Psztyc",
-    "The Advanced REST client authors <arc@mulesoft.com>"
-  ]
+  "dependencies": {
+    "@advanced-rest-client/uuid-generator": "^3.0.1"
+  },
+  "devDependencies": {
+    "@advanced-rest-client/connectivity-state": "^3.0.0",
+    "@advanced-rest-client/a11y-suite": "^1.1.0",
+    "@advanced-rest-client/arc-demo-helper": "^1.0.3",
+    "@advanced-rest-client/form-action-bar": "^3.0.0",
+    "@advanced-rest-client/paper-fab-menu": "^3.0.0",
+    "@advanced-rest-client/testing-karma-sl": "^1.0.2",
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^7.0.0",
+    "@open-wc/eslint-config": "^0.4.1",
+    "@open-wc/prettier-config": "^0.1.0",
+    "@open-wc/testing": "^0.11.1",
+    "@open-wc/testing-karma": "^2.0.6",
+    "@polymer/gen-typescript-declarations": "^1.6.2",
+    "@polymer/iron-icons": "^3.0.0",
+    "@polymer/iron-pages": "^3.0.0",
+    "@polymer/iron-test-helpers": "^3.0.0",
+    "@polymer/paper-button": "^3.0.0",
+    "@polymer/paper-checkbox": "^3.0.0",
+    "@polymer/paper-dropdown-menu": "^3.0.0",
+    "@polymer/paper-icon-button": "^3.0.0",
+    "@polymer/paper-input": "^3.0.0",
+    "@polymer/paper-item": "^3.0.0",
+    "@polymer/paper-listbox": "^3.0.0",
+    "@polymer/paper-toggle-button": "^3.0.0",
+    "husky": "^1.0.0",
+    "lint-staged": "^8.0.0",
+    "lit-element": "^2.0.1",
+    "owc-dev-server": "^1.0.0",
+    "sinon": "^7.2.3",
+    "web-animations-js": "^2.3.1",
+    "webpack-merge": "^4.1.5"
+  },
+  "scripts": {
+    "test": "karma start --coverage",
+    "update-types": "gen-typescript-declarations --deleteExisting --outDir .",
+    "start": "owc-dev-server --app-index demo/index.html --open --watch",
+    "lint:eslint": "eslint --ext .js,.html .",
+    "format:eslint": "eslint --ext .js,.html . --fix",
+    "lint:prettier": "prettier \"**/*.js\" --list-different || (echo '↑↑ these files are not prettier formatted ↑↑' && exit 1)",
+    "format:prettier": "prettier \"**/*.js\" --write",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "format": "npm run format:eslint && npm run format:prettier",
+    "test:watch": "karma start --auto-watch=true --single-run=false",
+    "test:legacy": "karma start --legacy --coverage",
+    "test:legacy:watch": "karma start --legacy --auto-watch=true --single-run=false",
+    "test:sl": "karma start karma.sl.config.js --legacy --coverage"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
 }

@@ -6,64 +6,61 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <title>app-analytics demo</title>
-  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-  <link rel="import" href="../../shadycss/apply-shim.html">
-  <link rel="import" href="../../polymer/lib/elements/custom-style.html">
-  <link rel="import" href="../../polymer/lib/elements/dom-bind.html">
-  <link rel="import" href="../../polymer/lib/elements/dom-if.html">
-  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
-  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
-  <link rel="import" href="../../paper-input/paper-input.html">
-  <link rel="import" href="../../paper-styles/paper-styles.html">
-  <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
-  <link rel="import" href="../../paper-listbox/paper-listbox.html">
-  <link rel="import" href="../../paper-item/paper-item.html">
-  <link rel="import" href="../../iron-pages/iron-pages.html">
-  <link rel="import" href="../../paper-checkbox/paper-checkbox.html">
-  <link rel="import" href="../../paper-button/paper-button.html">
-  <link rel="import" href="../../paper-fab-menu/paper-fab-menu.html">
-  <link rel="import" href="../../paper-fab-menu/paper-fab-menu-item.html">
-  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
-  <link rel="import" href="../../form-action-bar/form-action-bar.html">
-  <link rel="import" href="../../paper-toggle-button/paper-toggle-button.html">
-  <link rel="import" href="../../neon-animation/web-animations.html">
-  <link rel="import" href="../../iron-icons/iron-icons.html">
-  <link rel="import" href="../app-analytics.html">
-  <link rel="import" href="../app-analytics-custom.html">
-  <custom-style>
-    <style is="custom-style" include="demo-pages-shared-styles">
-    :host {
-      --paper-button-disabled {
-        color: red;
-      }
-      ;
-    }
 
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../node_modules/web-animations-js/web-animations-next.min.js"></script>
+  <script type="module" src="../node_modules/@advanced-rest-client/arc-demo-helper/arc-demo-helper.js"></script>
+
+  <script type="module" src="../node_modules/@polymer/paper-input/paper-input.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-styles/paper-styles.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-dropdown-menu/paper-dropdown-menu.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-listbox/paper-listbox.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-item/paper-item.js"></script>
+  <script type="module" src="../node_modules/@polymer/iron-pages/iron-pages.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-checkbox/paper-checkbox.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-button/paper-button.js"></script>
+  <script type="module" src="../node_modules/@advanced-rest-client/paper-fab-menu/paper-fab-menu.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-fab/paper-fab.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-icon-button/paper-icon-button.js"></script>
+  <script type="module" src="../node_modules/@advanced-rest-client/form-action-bar/form-action-bar.js"></script>
+  <script type="module" src="../node_modules/@polymer/paper-toggle-button/paper-toggle-button.js"></script>
+  <script type="module" src="../node_modules/@polymer/iron-icons/iron-icons.js"></script>
+  <script type="module" src="../node_modules/@advanced-rest-client/connectivity-state/connectivity-state.js"></script>
+  <script type="module" src="../app-analytics.js"></script>
+  <script type="module" src="../app-analytics-custom.js"></script>
+
+  <style>
     .row {
-      @apply --layout-horizontal;
+      display: flex;
+      flex-direction: row;
     }
 
-    .row>*:not(:last-child) {
+    .row > *:not(:last-child) {
       margin-right: 24px;
     }
 
-    .row>*:first-child {
-      @apply --layout-flex;
+    .row > *:first-child {
+      flex: 1;
+      flex-basis: 0.000000001px;
     }
 
     section[card] {
-      @apply --shadow-elevation-4dp;
+      box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 10px 0 rgba(0, 0, 0, 0.12),
+                  0 2px 4px -1px rgba(0, 0, 0, 0.4);
       padding: 20px;
       background: white;
       margin-bottom: 40px;
     }
 
     h3 {
-      @apply --paper-font-title;
+      font-weight: 200;
+      font-size: 24px;
     }
 
     h4 {
-      @apply --paper-font-caption;
+      font-weight: 500;
+      font-size: 14px;
       color: rgba(0, 0, 0, 0.54);
     }
 
@@ -82,7 +79,6 @@
       text-align: left;
       width: 100%;
       margin-bottom: 40px;
-      @apply --paper-font-body1;
       font-size: 15px;
     }
 
@@ -124,7 +120,8 @@
 
     .error-info label {
       display: block;
-      @apply --paper-font-caption;
+      font-weight: 500;
+      font-size: 14px;
       color: rgba(0, 0, 0, 0.54);
     }
 
@@ -139,19 +136,21 @@
     }
 
     .metric-row {
-      @apply --layout-horizontal;
-      @apply --layout-center;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
     }
 
-    .metric-row>*:not(:last-child) {
+    .metric-row > *:not(:last-child) {
       margin-right: 24px;
     }
 
-    .metric-row>paper-input:last-of-type {
-      @apply --layout-flex;
+    .metric-row > paper-input:last-of-type {
+      flex: 1;
+      flex-basis: 0.000000001px;
     }
 
-    .metric-row>paper-input:first-of-type {
+    .metric-row > paper-input:first-of-type {
       min-width: 120px;
     }
 
@@ -160,265 +159,13 @@
       font-weight: 500;
       font-size: 17px;
     }
-    </style>
-  </custom-style>
+  </style>
 </head>
 
-<body unresolved>
-  <dom-bind id="app">
-    <template is="dom-bind">
-      <div class="vertical-section-container centered">
-        <h3>The `app-analytics`</h3>
-        <section card>
-          <h4>Bacsic information</h4>
-          <paper-toggle-button checked="{{debug}}">Debug (output to console)</paper-toggle-button>
-          <paper-toggle-button checked="{{debugEndpoint}}">Debug endponit (request parser)</paper-toggle-button>
-          <paper-input label="Tracking ID (UA-XXXX-Y)" value="{{trackingId}}"></paper-input>
-          <div class="row">
-            <paper-input label="App name" value="{{appName}}"></paper-input>
-            <paper-input label="App version" value="{{appVersion}}" pattern="^\d+\.\d+\.\d+([\-a-zA-Z0-9]+)?$" auto-validate></paper-input>
-          </div>
-        </section>
-        <section card>
-          <h4>Hit type</h4>
-          <paper-dropdown-menu label="Select hit type">
-            <paper-listbox slot="dropdown-content" selected="{{hitType}}" attr-for-selected="data-value">
-              <paper-item data-value="screenview">Screen view</paper-item>
-              <paper-item data-value="event">Event</paper-item>
-              <paper-item data-value="social">Social</paper-item>
-              <paper-item data-value="exception">Exception</paper-item>
-              <paper-item data-value="timing">Timing data</paper-item>
-            </paper-listbox>
-          </paper-dropdown-menu>
-          <iron-pages selected="{{hitType}}" attr-for-selected="data-value">
-            <section data-value="screenview">
-              <paper-input label="Screen name" value="{{screenName}}"></paper-input>
-            </section>
-            <section data-value="event">
-              <paper-input label="Category" value="{{eventCategory}}"></paper-input>
-              <paper-input label="Action" value="{{eventAction}}"></paper-input>
-              <paper-input label="Label" value="{{eventLabel}}"></paper-input>
-            </section>
-            <section data-value="social">
-              <paper-input label="Network" value="{{socialNetwork}}"></paper-input>
-              <paper-input label="Action" value="{{socialAction}}"></paper-input>
-              <paper-input label="Target" value="{{socialTarget}}"></paper-input>
-            </section>
-            <section data-value="exception">
-              <paper-input label="Description" value="{{exceptionDescription}}"></paper-input>
-              <paper-checkbox checked="{{exceptionFatal}}">The exception is fatal</paper-checkbox>
-            </section>
-            <section data-value="timing">
-              <paper-input label="Category" value="{{timingCategory}}"></paper-input>
-              <paper-input label="variable" value="{{timingVariable}}"></paper-input>
-              <paper-input label="time" type="datetime-local" value="{{timingTime}}"></paper-input>
-              <paper-input label="label" value="{{timingLabel}}"></paper-input>
-            </section>
-          </iron-pages>
-        </section>
-        <section card hidden="[[!hasCustomData]]">
-          <h4>Custom data</h4>
-          <template is="dom-if" if="[[customMetrics.length]]">
-            <h4>Custom metrics</h4>
-            <template is="dom-repeat" items="{{customMetrics}}" id="metricsList">
-              <div class="metric-row">
-                <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
-                <paper-input label="Value" value="{{item.value}}" type="number"></paper-input>
-                <paper-icon-button on-tap="_removeMetric" icon="remove" title="Remove custom metric"></paper-icon-button>
-              </div>
-            </template>
-          </template>
-          <template is="dom-if" if="[[customDimensions.length]]">
-            <h4>Custom dimensions</h4>
-            <template is="dom-repeat" items="{{customDimensions}}" id="dimensionsList">
-              <div class="metric-row">
-                <paper-input label="Index (1-200)" value="{{item.index}}" type="number" min="1" max="200" step="1"></paper-input>
-                <paper-input label="Value" value="{{item.value}}"></paper-input>
-                <paper-icon-button on-tap="_removeDimension" icon="remove" title="Remove custom dimension"></paper-icon-button>
-              </div>
-            </template>
-          </template>
-        </section>
-        <section card hidden="[[!logs.length]]">
-          <h4>Log</h4>
-          <template is="dom-repeat" items="[[logs]]" index-as="index">
-            <template is="dom-if" if="[[item.isHit]]" restamp="true">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Param</th>
-                    <th>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <template is="dom-repeat" items="[[item.value]]">
-                    <tr>
-                      <td>[[item.name]]</td>
-                      <td>[[item.param]]</td>
-                      <td>[[item.value]]</td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-            </template>
-            <template is="dom-if" if="[[item.isValidation]]" restamp="true">
-              <template is="dom-repeat" items="[[item.value.hitParsingResult]]" index-as="index">
-                <p class="error" hidden$="[[item.valid]]">The hit <code>[[item.hit]]</code> is invalid</p>
-                <template is="dom-repeat" items="[[item.parserMessage]]" index-as="index">
-                  <div class="error-info">
-                    <label>[[item.parameter]] ([[_getParamName(item.parameter)]])</label>
-                    <p>[[item.description]]</p>
-                  </div>
-                </template>
-              </template>
-            </template>
-          </template>
-        </section>
-        <paper-fab-menu color="#2196F3" icon="add" position="vertical">
-          <paper-fab-menu-item color="#9C27B0" title="Custom metric" on-tap="addCustomMetric" label="12"></paper-fab-menu-item>
-          <paper-fab-menu-item color="#2196F3" title="Custom dimension" on-tap="addCustomDimension" icon="timeline"></paper-fab-menu-item>
-        </paper-fab-menu>
-        <form-action-bar elevation="5">
-          <div id="errorStatus" prefix hidden>Issue found in last hit</div>
-          <paper-button raised disabled$="[[!hitType]]" on-tap="send">Send hit</paper-button>
-        </form-action-bar>
-        <app-analytics id="analytics" tracking-id="[[trackingId]]" app-name="[[appName]]" app-version="[[appVersion]]" data-source="app-analytics element" debug="[[debug]]" debug-endpoint="[[debugEndpoint]]">
-          <template is="dom-repeat" items="[[customMetrics]]">
-            <app-analytics-custom type="metric" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
-          </template>
-          <template is="dom-repeat" items="[[customDimensions]]">
-            <app-analytics-custom type="dimension" index="[[item.index]]" value="[[item.value]]"></app-analytics-custom>
-          </template>
-        </app-analytics>
-      </div>
-    </template>
-  </dom-bind>
-  <script>
-  (function(app) {
-    'use strict';
-    app.trackingId = 'UA-71458341-4';
-    app.debugEndpoint = true;
-    app.debug = true;
-    app.appName = 'app-analytics demo app';
-    app.appVersion = '1.0.0';
-    app.hitType = '';
-    app.screenName = 'Main screen';
-    app.eventCategory = 'Engagement';
-    app.eventAction = 'Click';
-    app.eventLabel = 'Test event in app-analytics';
-    app.socialNetwork = 'Google +';
-    app.socialAction = 'Share';
-    app.socialTarget = window.location.href;
-    app.exceptionDescription = 'The database has crashed and app become unstable.';
-    app.exceptionFatal = true;
-    app.timingCategory = 'Database initialization';
-    app.timingVariable = 'connectionTime';
-    app.timingLabel = '';
-    app.hasCustomData = false;
-    app.customMetrics = [];
-    app.customDimensions = [];
-    var d = new Date();
-    d = d.toISOString();
-    d = d.substr(0, d.lastIndexOf('.'));
-    app.timingTime = d;
-    app.logs = [];
-    app.send = function() {
-      var detail = {
-        type: app.hitType
-      };
-      switch (app.hitType) {
-        case 'screenview':
-          detail.name = app.screenName;
-          break;
-        case 'event':
-          detail.category = app.eventCategory;
-          detail.action = app.eventAction;
-          detail.label = app.eventLabel;
-          break;
-        case 'social':
-          detail.network = app.socialNetwork;
-          detail.action = app.socialAction;
-          detail.target = app.socialTarget;
-          break;
-        case 'exception':
-          detail.fatal = app.exceptionFatal;
-          detail.description = app.exceptionDescription;
-          break;
-        case 'timing':
-          detail.category = app.timingCategory;
-          detail.variable = app.timingVariable;
-          detail.label = app.timingLabel;
-          detail.value = new Date(app.timingTime).getTime();
-          break;
-      }
-      app.dispatchEvent(new CustomEvent('send-analytics', {
-        bubbles: true,
-        composed: true,
-        detail: detail
-      }));
-    };
-    app._getParamName = function(parameter) {
-      return app.$.analytics._paramsMap[parameter] || 'unknown name';
-    };
-    app.addCustomMetric = function() {
-      app.hasCustomData = true;
-      app.push('customMetrics', {
-        index: '',
-        value: ''
-      });
-    };
-    app.addCustomDimension = function() {
-      app.hasCustomData = true;
-      app.push('customDimensions', {
-        index: '',
-        value: ''
-      });
-    };
-    app._removeMetric = function(e) {
-      var index = document.querySelector('#metricsList').indexForElement(e.target);
-      app.splice('customMetrics', index, 1);
-      if (!app.customMetrics.length && !app.customDimensions.length) {
-        app.hasCustomData = false;
-      }
-    };
-    app._removeDimension = function(e) {
-      var index = document.querySelector('#dimensionsList').indexForElement(e.target);
-      app.splice('customDimensions', index, 1);
-      if (!app.customMetrics.length && !app.customDimensions.length) {
-        app.hasCustomData = false;
-      }
-    };
-    window.addEventListener('app-analytics-hit-debug', function(e) {
-      app.push('logs', {
-        isHit: true,
-        value: e.detail.debug
-      });
-    });
-    window.addEventListener('app-analytics-structure-debug', function(e) {
-      if (e.detail.debug && e.detail.debug.hitParsingResult &&
-        e.detail.debug.hitParsingResult[0] && !e.detail.debug.hitParsingResult[0].valid) {
-        document.querySelector('#errorStatus').removeAttribute('hidden');
-        setTimeout(function() {
-          document.querySelector('#errorStatus').setAttribute('hidden', true);
-        }, 3000);
-      }
-      app.push('logs', {
-        isValidation: true,
-        value: e.detail.debug
-      });
-    });
-    const detail = {
-      type: 'screenview',
-      name: 'Init'
-    };
-    app.dispatchEvent(new CustomEvent('send-analytics', {
-      bubbles: true,
-      composed: true,
-      detail: detail
-    }));
-  })(document.querySelector('#app'));
-  </script>
+<body>
+  <div id="demo"></div>
+
+  <script type="module" src="index.js"></script>
 </body>
 
 </html>

@@ -5,19 +5,14 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   app-analytics.html
+ *   app-analytics.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../polymer/types/lib/utils/flattened-nodes-observer.d.ts" />
-/// <reference path="../uuid-generator/uuid-generator.d.ts" />
-/// <reference path="../connectivity-state/connectivity-state.d.ts" />
-
-declare namespace ArcElements {
+declare namespace LogicElements {
 
   /**
    * `<app-analytics>` An element that support Google Analytics analysis
@@ -178,19 +173,14 @@ declare namespace ArcElements {
    * document.dispatchEvent(event);
    * ```
    */
-  class AppAnalytics extends Polymer.Element {
-    readonly cidKey: any;
-    readonly disabledKey: any;
+  class AppAnalytics extends HTMLElement {
 
     /**
-     * If true the app probably is online. See `<connectivity-state>`.
+     * Note, UUID generator is used only during the initialization and when
+     * client id is not set and there's no coirresponding entry in local storage.
+     * Otherwise it is unused.
      */
-    isOnline: boolean|null|undefined;
-
-    /**
-     * Generated POST parameters based on a params
-     */
-    readonly baseParams: any[]|null|undefined;
+    readonly _uuid: Element|null;
 
     /**
      * The Client ID for the mearusement protocol.
@@ -204,7 +194,7 @@ declare namespace ArcElements {
      * - Example value: 35009a79-1a05-49d7-b876-2b884d0f825b
      * - Example usage: cid=35009a79-1a05-49d7-b876-2b884d0f825b
      */
-    clientId: string|null|undefined;
+    clientId: String|null;
 
     /**
      * This is intended to be a known identifier for a user provided by the site owner/tracking
@@ -215,19 +205,7 @@ declare namespace ArcElements {
      * - Example value: as8eknlll
      * - Example usage: uid=as8eknlll
      */
-    userId: string|null|undefined;
-
-    /**
-     * **Required for all hit types.**
-     *
-     * The Protocol version. The current value is '1'. This will only change when there
-     * are changes made that are not backwards compatible.
-     *
-     * - Parameter: **v**
-     * - Example value: 1
-     * - Example usage: v=1
-     */
-    readonly protocolVersion: string|null|undefined;
+    userId: String|null;
 
     /**
      * **Required for all hit types.**
@@ -239,7 +217,7 @@ declare namespace ArcElements {
      * - Example value: UA-XXXX-Y
      * - Example usage: tid=UA-XXXX-Y
      */
-    trackingId: string|null|undefined;
+    trackingId: String|null;
 
     /**
      * When present, the IP address of the sender will be anonymized.
@@ -250,7 +228,7 @@ declare namespace ArcElements {
      * - Example value: 1
      * - Example usage: aip=1
      */
-    anonymizeIp: boolean|null|undefined;
+    anonymizeIp: Boolean|null;
 
     /**
      * Indicates the data source of the hit. Hits sent from analytics.js will have data source
@@ -260,7 +238,7 @@ declare namespace ArcElements {
      * - Example value: call center
      * - Example usage: ds=call%20center
      */
-    dataSource: string|null|undefined;
+    dataSource: String|null;
 
     /**
      * Used to send a random number in GET requests to ensure browsers and proxies
@@ -270,7 +248,7 @@ declare namespace ArcElements {
      * - Example value: 289372387623
      * - Example usage: z=289372387623
      */
-    useCacheBooster: boolean|null|undefined;
+    useCacheBooster: Boolean|null;
 
     /**
      * Specifies which referral source brought traffic to a website. This value is also used to
@@ -280,7 +258,7 @@ declare namespace ArcElements {
      * - Example value: http://example.com
      * - Example usage: dr=http%3A%2F%2Fexample.com
      */
-    referrer: string|null|undefined;
+    referrer: String|null;
 
     /**
      * Specifies the campaign name.
@@ -289,7 +267,7 @@ declare namespace ArcElements {
      * - Example value: (direct)
      * - Example usage: cn=%28direct%29
      */
-    campaignName: string|null|undefined;
+    campaignName: String|null;
 
     /**
      * Specifies the campaign source.
@@ -298,7 +276,7 @@ declare namespace ArcElements {
      * - Example value: (direct)
      * - Example usage: cs=%28direct%29
      */
-    campaignSource: string|null|undefined;
+    campaignSource: String|null;
 
     /**
      * Specifies the campaign medium.
@@ -307,7 +285,7 @@ declare namespace ArcElements {
      * - Example value: organic
      * - Example usage: cm=organic
      */
-    campaignMedium: string|null|undefined;
+    campaignMedium: String|null;
 
     /**
      * Specifies the application version.
@@ -316,7 +294,7 @@ declare namespace ArcElements {
      * - Example value: 1.2
      * - Example usage: av=1.2
      */
-    appVersion: string|null|undefined;
+    appVersion: String|null;
 
     /**
      * Specifies the application name. This field is required for any hit that has app related
@@ -327,7 +305,7 @@ declare namespace ArcElements {
      * - Example My App
      * - Example usage: an=My%20App
      */
-    appName: string|null|undefined;
+    appName: String|null;
 
     /**
      * Application identifier.
@@ -336,7 +314,7 @@ declare namespace ArcElements {
      * - Example value: com.company.app
      * - Example usage: aid=com.company.app
      */
-    appId: string|null|undefined;
+    appId: String|null;
 
     /**
      * Application installer identifier.
@@ -345,29 +323,7 @@ declare namespace ArcElements {
      * - Example value: com.platform.vending
      * - Example usage: aiid=com.platform.vending
      */
-    appInstallerId: string|null|undefined;
-
-    /**
-     * Each custom metric has an associated index. There is a maximum of 20 custom
-     * metrics (200 for Analytics 360 accounts). The metric index must be a positive
-     * integer between 1 and 200, inclusive.
-     *
-     * - Parameter: **cm<metricIndex>**
-     * - Example value: 47
-     * - Example usage: cm1=47
-     */
-    readonly customMetrics: any[]|null|undefined;
-
-    /**
-     * Each custom dimension has an associated index. There is a maximum of 20 custom
-     * dimensions (200 for Analytics 360 accounts). The dimension index must be a positive
-     * integer between 1 and 200, inclusive.
-     *
-     * - Parameter: **cd<dimensionIndex>**
-     * - Example value: Sports
-     * - Example usage: cd1=Sports
-     */
-    readonly customDimensions: any[]|null|undefined;
+    appInstallerId: String|null;
 
     /**
      * True if current environment has localStorage suppport.
@@ -378,7 +334,7 @@ declare namespace ArcElements {
     /**
      * If set to true it will prints debug messages into the console.
      */
-    debug: boolean|null|undefined;
+    debug: Boolean|null;
 
     /**
      * If set it will send the data to GA's debug endpoint
@@ -387,8 +343,7 @@ declare namespace ArcElements {
      * `aapp-analytics-structure-debug`
      * event in the detail's `debug` property.
      */
-    debugEndpoint: boolean|null|undefined;
-    readonly _paramsMap: object|null|undefined;
+    debugEndpoint: Boolean|null;
 
     /**
      * If set disables Google Analytics reporting.
@@ -396,16 +351,53 @@ declare namespace ArcElements {
      * information is not cleared it is respected and data are not send to GA
      * server.
      */
-    disabled: boolean|null|undefined;
+    disabled: Boolean|null;
 
     /**
-     * List of hist to be send when came back from offline state.
-     * Note, this is in memory information only.
-     * The component do not sotres this information.
+     * When set it queues requests to GA in memory and attempts to send the requests
+     * again when this flag is removed.
      */
-    _offlineQueue: any[]|null|undefined;
+    offline: Boolean|null;
+
+    /**
+     * Generated POST parameters based on a params
+     */
+    _baseParams: object|null;
+
+    /**
+     * Each custom metric has an associated index. There is a maximum of 20 custom
+     * metrics (200 for Analytics 360 accounts). The metric index must be a positive
+     * integer between 1 and 200, inclusive.
+     *
+     * - Parameter: **cm<metricIndex>**
+     * - Example value: 47
+     * - Example usage: cm1=47
+     */
+    _customMetrics: Array<object|null>|null;
+
+    /**
+     * Each custom dimension has an associated index. There is a maximum of 20 custom
+     * dimensions (200 for Analytics 360 accounts). The dimension index must be a positive
+     * integer between 1 and 200, inclusive.
+     *
+     * - Parameter: **cd<dimensionIndex>**
+     * - Example value: Sports
+     * - Example usage: cd1=Sports
+     */
+    _customDimensions: Array<object|null>|null;
+    readonly cidKey: String|null;
+    readonly disabledKey: String|null;
+    attributeChangedCallback(name: any, oldValue: any, newValue: any): void;
+    _setStringProperty(name: any, value: any): void;
+    _setBooleanProperty(name: any, value: any): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
+
+    /**
+     * A mutation observer callback function called when children or attributes changed.
+     * It processes child nodes depending on mutation type and change record.
+     */
+    _childrenUpdated(mutations: Array<MutationRecord|null>|null): void;
 
     /**
      * Restores data stored in localStorage.
@@ -440,14 +432,11 @@ declare namespace ArcElements {
     _processRemovedNodes(nodes: NodeList|null): void;
 
     /**
-     * Handler for app-analytics-custom-changed event. Registers a new custom property.
+     * Processes `MutationRecord` for attribute change
+     *
+     * @param mutation A mutation record that triggered the callback
      */
-    _customPropertyChanged(e: any): void;
-
-    /**
-     * Handler for app-analytics-custom-removed event. Unregisters a custom property.
-     */
-    _customPropertyRemoved(e: any): void;
+    _processChildAttribute(mutation: MutationRecord|null): void;
 
     /**
      * Sets custom dimension to be send with the hit.
@@ -490,11 +479,29 @@ declare namespace ArcElements {
     removeCustomMetric(index: Number|null): void;
 
     /**
+     * Adds custom metric / dimension to the corresponding array.
+     *
+     * @param prop The name of the property with the array of custom items.
+     * @param index Index of the custom property. Free version of GA allows up to 20
+     * custom metrics/dimensions and up to 200 in premium. The index has to be in range 1 - 200.
+     * @param value Value of the custom property to set.
+     */
+    _addCustom(prop: String|null, index: Number|null, value: Strnig|null): void;
+
+    /**
+     * Removes from this instance custom metric/dimension for given index.
+     *
+     * @param prop The name of the property with the array of custom items.
+     * @param index Index of the custom metric. The index has to be in range 1 - 200.
+     */
+    _removeCustom(prop: String|null, index: Number|null): void;
+
+    /**
      * Sends the screenview hit to the GA.
      *
      * @param name Screen name.
      * @param opts Custom data definition. It should be an object that may contain two
-     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
      */
@@ -508,7 +515,7 @@ declare namespace ArcElements {
      * @param label Specifies the event label. Optional value.
      * @param value Specifies the event value. Values must be non-negative. Optional.
      * @param opts Custom data definition. It should be an object that may contain two
-     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
      */
@@ -520,7 +527,7 @@ declare namespace ArcElements {
      * @param description A description of the exception.
      * @param fatal Specifies whether the exception was fatal.
      * @param opts Custom data definition. It should be an object that may contain two
-     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
      */
@@ -535,7 +542,7 @@ declare namespace ArcElements {
      * @param target Specifies the target of a social interaction. This value is
      * typically a URL but can be any text.
      * @param opts Custom data definition. It should be an object that may contain two
-     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
      */
@@ -550,7 +557,7 @@ declare namespace ArcElements {
      * **required**
      * @param label Specifies the user timing label.
      * @param cmOpts Custom data definition. It should be an object that may contain two
-     * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+     * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
      * contain `index` property - representing custom data index in GA - and `value` property -
      * representing value of the property.
      */
@@ -595,10 +602,23 @@ declare namespace ArcElements {
     _configureBaseParams(): void;
     _printParamsTable(list: any): void;
     _transport(body: any): any;
-    _onlineChanged(value: any): any;
+    _offlineChanged(value: any): any;
+
+    /**
+     * MutationObserver initialized in the constructor does not
+     * triggers changes when the element is initialized. This
+     * function processes nodes set up declaratively when the element is still
+     * initializing.
+     */
+    _processInitialNodes(): void;
   }
 }
 
-interface HTMLElementTagNameMap {
-  "app-analytics": ArcElements.AppAnalytics;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "app-analytics": LogicElements.AppAnalytics;
+  }
 }
+
+export {};
