@@ -2,20 +2,39 @@
 
 [![Build Status](https://travis-ci.org/advanced-rest-client/app-analytics.svg?branch=stage)](https://travis-ci.org/advanced-rest-client/app-analytics)
 
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/advanced-rest-client/app-analytics)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/@advanced-rest-client/app-analytics)
 
-## &lt;app-analytics&gt;
+# app-analytics
 
-Event based component to support Google Analystics measurement protocols
+Event based component to support Google Analytics measurement protocol.
 
+The component support both imperative and declarative API so it can be used in regular HTML template using your favourite templating engine and in JavaScript.
 
-```html
-<app-analytics
- tracking-id="UA-XXXXXXX-Y"
- app-name="my app"
- app-version="1.0.0"
- data-source="app-analytics element"></app-analytics>
-```
+The `appname` and `trackingid` attributes (`appName` and `trackingId` properties respectively) are required parameters. Without it the element won't initialize a call to GA endpoint.
+
+If `clientid` attribute (`clientId` property) is not set then it generates one automatically and store is in `localStorage`. Note, that if current environment does not support `localStorage` (like Chrome Apps) you need to provide this property manually or otherwise it will be regenerated each time the user opens the app.
+
+Note, Google Analytics does not allow sending any information that may lead to a user.
+
+Always give the user ability to disable tracking. Under EU laws you need to have permission from the user to store data on local device. To disable analytics simply remove the element from the DOM or set `disabled` property.
+
+Note, the `disabled` state is persistent in `localStorage` and automatically restored when element is initialized. If the environment does not support `localStorage` you need to set this attribute manually each time the element is initialized.
+
+## Using `<app-analytics>`
+
+You can directly call one of `send*()` functions. See API Reference below for more info.
+
+-   <a href="#method-sendEvent">sendEvent</a>
+-   <a href="#method-sendException">sendException</a>
+-   <a href="#method-sendScreen">sendScreen</a>
+-   <a href="#method-sendSocial">sendSocial</a>
+-   <a href="#method-sendTimings">sendTimings</a>
+
+You can also use HTML events to send a hit. In this case dispatch a `send-analytics` event with required `type` property on the `detail` object which describes what king of hit should be send. Possible values are: `pageview`, `screenview`, `event`, `social`, `exception` or `timing`.
+
+Other parameters depends on the type.
+
+### Sending `screenview` hit
 
 ```javascript
 const event = new CustomEvent('send-analytics', {
@@ -29,69 +48,101 @@ const event = new CustomEvent('send-analytics', {
 document.body.dispatchEvent(event);
 ```
 
-### API components
+#### Sending `event` hit
 
-This components is a part of [API components ecosystem](https://elements.advancedrestclient.com/)
-
-## Usage
-
-### Installation
+```javascript
+const event = new CustomEvent('send-analytics', {
+ bubbles: true,
+ composed: true,
+ detail: {
+   type: 'event',
+   category: 'Some category', // required.
+   action: 'Some action', // required.
+   label: 'Some label',
+   value: 123
+ }
+});
+document.body.dispatchEvent(event);
 ```
-npm install --save @advanced-rest-client/app-analytics
+
+#### Sending `exception` hit
+
+```javascript
+const event = new CustomEvent('send-analytics', {
+ bubbles: true,
+ composed: true,
+ detail: {
+   type: 'exception',
+   description: 'Exception description', // required.
+   fatal: true, // default false
+ }
+});
+document.body.dispatchEvent(event);
 ```
 
-### In an html file
+#### Sending `social` hit
+
+```javascript
+const event = new CustomEvent('send-analytics', {
+ bubbles: true,
+ composed: true,
+ detail: {
+   type: 'social',
+   network: 'Facebook', // required.
+   action: 'Share', // required
+   target: 'https://www.shared.com/resource' // required
+ }
+});
+document.body.dispatchEvent(event);
+```
+
+#### Sending `timing` hit
+
+```javascript
+const event = new CustomEvent('send-analytics', {
+ bubbles: true,
+ composed: true,
+ detail: {
+   type: 'timing',
+   category: 'Bootstrap', // required.
+   variable: 'databaseInitTime', // required
+   value: 123, // required
+   label: 'Optional label'
+ }
+});
+document.body.dispatchEvent(event);
+```
+
+## Custom metrics and dimensions
+
+Use `<app-analytics-custom>` element as a child of `<app-analytics>` to set custom properties. This metrics / dimensions will be used with every hit as long as this elements exists as a children of the `<app-analytics>` element.
+
+### Example
 
 ```html
-<html>
-  <head>
-    <script type="module">
-      import '@advanced-rest-client/app-analytics/app-analytics.js';
-    </script>
-  </head>
-  <body>
-    <app-analytics></app-analytics>
-  </body>
-</html>
+<app-analytics tracking-id="UA-XXXXXXX">
+ <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+</app-analytics>
 ```
 
-### In a Polymer 3 element
+To send custom data with single hit only without creating `<app-analytics-custom>` children, add `customDimensions` or `customMetrics` to the event detail object. Both objects must be an array of custom definition objects that includes index and value.
 
-```js
-import {PolymerElement, html} from '@polymer/polymer';
-import '@advanced-rest-client/app-analytics/app-analytics.js';
+### Example
 
-class SampleElement extends PolymerElement {
-  static get template() {
-    return html`
-    <app-analytics></app-analytics>
-    `;
-  }
-
-  _authChanged(e) {
-    console.log(e.detail);
-  }
-}
-customElements.define('sample-element', SampleElement);
-```
-
-### Installation
-
-```sh
-git clone https://github.com/advanced-rest-client/app-analytics
-cd api-url-editor
-npm install
-npm install -g polymer-cli
-```
-
-### Running the demo locally
-
-```sh
-polymer serve --npm
-open http://127.0.0.1:<port>/demo/
-```
-
-### Running the tests
-```sh
-polymer test --npm
+```javascript
+const event = new CustomEvent('send-analytics', {
+ bubbles: true,
+ composed: true,
+ detail: {
+   type: 'event',
+   category: 'Engagement',
+   action: 'Click',
+   label: 'Movie start',
+   customDimensions: [{
+     index: 1, // index of the custom dimension
+     value: 'Author name' // Value of the custom dimension
+   }]
+ }
+});
+document.body.dispatchEvent(event);
 ```

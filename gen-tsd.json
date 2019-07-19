@@ -2,6 +2,7 @@
   "excludeFiles": [
     "demo/*",
     "test/*",
+    "node_modules/**",
     "karma.*",
     "prettier.config.js",
     "husky.config.js",

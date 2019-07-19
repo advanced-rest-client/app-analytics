@@ -264,7 +264,7 @@ export const offlineQueue = [];
  * ```
  *
  * To send custom data with single hit only without creating `<app-analytics-custom>` children,
- * add `_customDimensions` or `_customMetrics` to the event detail object. Both objects must be
+ * add `customDimensions` or `customMetrics` to the event detail object. Both objects must be
  * an array of custom definition objects that includs index and value.
  *
  * ### Example
@@ -288,9 +288,8 @@ export const offlineQueue = [];
  * ```
  *
  * @customElement
- * @polymer
  * @demo demo/index.html
- * @memberof ArcElements
+ * @memberof LogicElements
  */
 class AppAnalytics extends HTMLElement {
   /**
@@ -559,6 +558,8 @@ class AppAnalytics extends HTMLElement {
    * - Parameter: **av**
    * - Example value: 1.2
    * - Example usage: av=1.2
+   *
+   * @return {String}
    */
   get appVersion() {
     return this._appVersion;
@@ -576,6 +577,8 @@ class AppAnalytics extends HTMLElement {
    * - Parameter: **an**
    * - Example My App
    * - Example usage: an=My%20App
+   *
+   * @return {String}
    */
   get appName() {
     return this._appName;
@@ -591,6 +594,8 @@ class AppAnalytics extends HTMLElement {
    * - Parameter: **aid**
    * - Example value: com.company.app
    * - Example usage: aid=com.company.app
+   *
+   * @return {String}
    */
   get appId() {
     return this._appId;
@@ -606,6 +611,8 @@ class AppAnalytics extends HTMLElement {
    * - Parameter: **aiid**
    * - Example value: com.platform.vending
    * - Example usage: aiid=com.platform.vending
+   *
+   * @return {String}
    */
   get appInstallerId() {
     return this._appInstallerId;
@@ -617,6 +624,8 @@ class AppAnalytics extends HTMLElement {
   }
   /**
    * If set to true it will prints debug messages into the console.
+   *
+   * @return {Boolean}
    */
   get debug() {
     return this._debug;
@@ -631,6 +640,8 @@ class AppAnalytics extends HTMLElement {
    * and the validation results will be fired in the
    * `aapp-analytics-structure-debug`
    * event in the detail's `debug` property.
+   *
+   * @return {Boolean}
    */
   get debugEndpoint() {
     return this._debugEndpoint;
@@ -644,6 +655,7 @@ class AppAnalytics extends HTMLElement {
    * This information is stored in localStorage. As long as this
    * information is not cleared it is respected and data are not send to GA
    * server.
+   *
    * @return {Boolean}
    */
   get disabled() {
@@ -657,6 +669,7 @@ class AppAnalytics extends HTMLElement {
   /**
    * When set it queues requests to GA in memory and attempts to send the requests
    * again when this flag is removed.
+   *
    * @return {Boolean}
    */
   get offline() {
@@ -686,6 +699,8 @@ class AppAnalytics extends HTMLElement {
    * - Parameter: **cm<metricIndex>**
    * - Example value: 47
    * - Example usage: cm1=47
+   *
+   * @return {Array<Object>}
    */
   get _customMetrics() {
     return this.__customMetrics;
@@ -702,6 +717,8 @@ class AppAnalytics extends HTMLElement {
    * - Parameter: **cd<dimensionIndex>**
    * - Example value: Sports
    * - Example usage: cd1=Sports
+   *
+   * @return {Array<Object>}
    */
   get _customDimensions() {
     return this.__customDimensions;

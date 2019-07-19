@@ -12,9 +12,7 @@
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-
-declare namespace ArcElements {
+declare namespace LogicElements {
 
   /**
    * `<app-analytics-custom>` Sets a custom metric/dimmenstion for `<app-analytics>`.
@@ -31,36 +29,24 @@ declare namespace ArcElements {
    *
    * It will set a custom metric of index 1 to every hit with value 5.
    */
-  class AppAnalyticsCustom extends PolymerElement {
+  class AppAnalyticsCustom extends HTMLElement {
+    type: String|null;
+    index: Number|null;
 
     /**
-     * Type of custom value. Either metric or dimmension
+     * Type of this attribute depends on the `type` property. It can be numeric or string value.
+     * Internally the element keeps all values as string and the value is cast to
+     * a number if represents numeric value.
      */
-    type: string|null|undefined;
-
-    /**
-     * Index of the custom metric. It can be found in Google Analytics admin panel
-     */
-    index: number|null|undefined;
-
-    /**
-     * The value of the metric or dimension. Type of this attribute depends on the `type`.
-     */
-    value: string|null|undefined;
-
-    /**
-     * Full name of the metric/dimension.
-     */
-    readonly fullName: string|null|undefined;
+    value: String|Number|null;
+    readonly fullName: String|null;
+    attributeChangedCallback(name: any, oldValue: any, newValue: any): void;
     connectedCallback(): void;
     _indexObserver(index: any, oldIndex: any): void;
     _customChanged(type: any, index: any, value: any): void;
   }
 }
 
-declare global {
-
-  interface HTMLElementTagNameMap {
-    "app-analytics-custom": ArcElements.AppAnalyticsCustom;
-  }
+interface HTMLElementTagNameMap {
+  "app-analytics-custom": LogicElements.AppAnalyticsCustom;
 }

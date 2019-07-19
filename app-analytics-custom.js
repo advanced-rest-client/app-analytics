@@ -27,9 +27,8 @@ the License.
  * It will set a custom metric of index 1 to every hit with value 5.
  *
  * @customElement
- * @polymer
  * @demo demo/index.html
- * @memberof ArcElements
+ * @memberof LogicElements
  */
 class AppAnalyticsCustom extends HTMLElement {
   static get observedAttributes() {
