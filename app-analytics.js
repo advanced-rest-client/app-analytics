@@ -980,12 +980,12 @@ class AppAnalytics extends HTMLElement {
   _addCustom(prop, index, value) {
     index = Number(index);
     if (index !== index) {
-      throw new Error('Index is not a number.');
+      throw new TypeError('Index is not a number.');
     }
     if (index <= 0 || index > 200) {
-      throw new Error('Index out of bounds');
+      throw new RangeError('Index out of bounds');
     }
-    const custom = this[prop] || [];
+    const custom = this[prop];
     const pos = custom.findIndex((i) => i.index === index);
     if (pos !== -1) {
       if (this[prop][pos].value !== value) {
@@ -1009,7 +1009,7 @@ class AppAnalytics extends HTMLElement {
    */
   _removeCustom(prop, index) {
     index = Number(index);
-    const custom = this[prop] || [];
+    const custom = this[prop];
     const pos = custom.findIndex((i) => i.index === index);
     if (pos === -1) {
       return;
@@ -1177,13 +1177,13 @@ class AppAnalytics extends HTMLElement {
     if (!opts) {
       return;
     }
-    if (opts._customDimensions && opts._customDimensions.length) {
-      opts._customDimensions.forEach((item) => {
+    if (opts.customDimensions && opts.customDimensions.length) {
+      opts.customDimensions.forEach((item) => {
         data['cd' + item.index] = item.value;
       });
     }
-    if (opts._customMetrics && opts._customMetrics.length) {
-      opts._customMetrics.forEach((item) => {
+    if (opts.customMetrics && opts.customMetrics.length) {
+      opts.customMetrics.forEach((item) => {
         data['cm' + item.index] = item.value;
       });
     }
@@ -1224,11 +1224,11 @@ class AppAnalytics extends HTMLElement {
     }
     const d = e.detail;
     const opts = {};
-    if (d._customDimensions) {
-      opts._customDimensions = d._customDimensions;
+    if (d.customDimensions) {
+      opts.customDimensions = d.customDimensions;
     }
-    if (d._customMetrics) {
-      opts._customMetrics = d._customMetrics;
+    if (d.customMetrics) {
+      opts.customMetrics = d.customMetrics;
     }
     switch (d.type) {
       case 'screenview':
