@@ -20,7 +20,7 @@ Always give the user ability to disable tracking. Under EU laws you need to have
 
 Note, the `disabled` state is persistent in `localStorage` and automatically restored when element is initialized. If the environment does not support `localStorage` you need to set this attribute manually each time the element is initialized.
 
-## Using `<app-analytics>`
+## Using events API
 
 You can directly call one of `send*()` functions. See API Reference below for more info.
 
@@ -120,7 +120,7 @@ Use `<app-analytics-custom>` element as a child of `<app-analytics>` to set cust
 ### Example
 
 ```html
-<app-analytics tracking-id="UA-XXXXXXX">
+<app-analytics trackingid="UA-XXXXXXX">
  <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
 </app-analytics>
 ```
@@ -145,4 +145,80 @@ const event = new CustomEvent('send-analytics', {
  }
 });
 document.body.dispatchEvent(event);
+```
+
+## Usage
+
+### In a HTML page
+
+```html
+<script type="module" src="@advanced-rest-client/app-analytics/app-analytics.js"></script>
+<script type="module" src="@advanced-rest-client/app-analytics/app-analytics-custom.js"></script>
+
+<app-analytics trackingid="UA-XXXXXXX">
+ <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+</app-analytics>
+```
+
+### In a LitElement template
+
+```javascript
+import { LitElement, html } from 'lit-element';
+import '@advanced-rest-client/app-analytics/app-analytics.js';
+import '@advanced-rest-client/app-analytics/app-analytics-custom.js';
+
+class SampleElement extends LitElement {
+  render() {
+    return html`
+    <button @click="${this._handler}">Click with action</button>
+
+    <app-analytics trackingid="UA-XXXXXXX">
+     <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+    </app-analytics>
+    `;
+  }
+
+  _handler(e) {
+    this.shadowRoot.querySelector('app-analytics').sendScreen('Main screen');
+  }
+}
+customElements.define('sample-element', SampleElement);
+```
+
+### Imperative use
+
+```html
+<app-analytics trackingid="UA-XXXXXXX">
+ <app-analytics-custom type="metric" index="1" value="5"></app-analytics-custom>
+</app-analytics>
+<script>
+{
+  document..querySelector('app-analytics').sendScreen('Main screen');
+}
+</script>
+```
+
+## New in version 3
+
+-   Dropped support for Polymer library. It is now a plain web component.
+-   Added `aria-hidden` attribute.
+-   Removed internal recognition of offline mode. Use `offline` property instead to enable queueing for events to be send when back online.
+
+### Development
+
+```sh
+git clone https://github.com/@advanced-rest-client/app-analytics
+cd app-analytics
+npm install
+```
+
+### Running the demo locally
+
+```sh
+npm start
+```
+
+### Running the tests
+```sh
+npm test
 ```

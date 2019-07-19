@@ -1039,7 +1039,7 @@ class AppAnalytics extends HTMLElement {
    *
    * @param {String} name Screen name.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
+   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -1059,7 +1059,7 @@ class AppAnalytics extends HTMLElement {
    * @param {String?} label Specifies the event label. Optional value.
    * @param {Number?} value Specifies the event value. Values must be non-negative. Optional.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
+   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -1094,7 +1094,7 @@ class AppAnalytics extends HTMLElement {
    * @param {String} description A description of the exception.
    * @param {Boolean} fatal Specifies whether the exception was fatal.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
+   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -1117,7 +1117,7 @@ class AppAnalytics extends HTMLElement {
    * @param {String} target Specifies the target of a social interaction. This value is
    * typically a URL but can be any text.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
+   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -1153,7 +1153,7 @@ class AppAnalytics extends HTMLElement {
    * **required**
    * @param {String} label Specifies the user timing label.
    * @param {Object} cmOpts Custom data definition. It should be an object that may contain two
-   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
+   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
