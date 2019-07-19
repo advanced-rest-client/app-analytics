@@ -289,3 +289,50 @@
 
 
 
+# [3.0.0](https://github.com/advanced-rest-client/app-analytics/compare/1.0.15...3.0.0) (2019-07-19)
+
+
+### Breaking
+
+* Upgrading to Polymer 3 ([b34675e4fc4f9cbbef0d10e512928b4b3f8c0e76](https://github.com/advanced-rest-client/app-analytics/commit/b34675e4fc4f9cbbef0d10e512928b4b3f8c0e76))
+
+### build
+
+* bumping version to stable ([a9b2195e2b1a6088e2d7f9172e868c856c14afe4](https://github.com/advanced-rest-client/app-analytics/commit/a9b2195e2b1a6088e2d7f9172e868c856c14afe4))
+
+### chore
+
+* dropping support for Polymer library ([d58440a979a8a0daf6dbef1bb743e08b9dea7b27](https://github.com/advanced-rest-client/app-analytics/commit/d58440a979a8a0daf6dbef1bb743e08b9dea7b27))
+
+### docs
+
+* updating docs ([f169c7d53b234ac798ce3427763f11c1c4607fe9](https://github.com/advanced-rest-client/app-analytics/commit/f169c7d53b234ac798ce3427763f11c1c4607fe9))
+* updating typpings ([40911ae1df69c32a3124e5abc2cd7f74f043fc2b](https://github.com/advanced-rest-client/app-analytics/commit/40911ae1df69c32a3124e5abc2cd7f74f043fc2b))
+
+### Docs
+
+* Updating readme ([d890e574dad41255a12486c073e8bb3068aac0f5](https://github.com/advanced-rest-client/app-analytics/commit/d890e574dad41255a12486c073e8bb3068aac0f5))
+
+### fix
+
+* fixing _baseParams type ([8c0e131f0264a78bc51cf110909ed58c5a644e45](https://github.com/advanced-rest-client/app-analytics/commit/8c0e131f0264a78bc51cf110909ed58c5a644e45))
+* removing Polymer as a dependency ([1e79488ad5f026ee97a40b14cddc390a4fe52dcd](https://github.com/advanced-rest-client/app-analytics/commit/1e79488ad5f026ee97a40b14cddc390a4fe52dcd))
+
+### Fix
+
+* Fixing configuration when disabled/cid changes ([5b2d6e58b833d62e99f7347dad125a937fdc2d2b](https://github.com/advanced-rest-client/app-analytics/commit/5b2d6e58b833d62e99f7347dad125a937fdc2d2b))
+
+### test
+
+* finishing test for new version ([5210d394409d17f981e0e4784653481a4d6237bf](https://github.com/advanced-rest-client/app-analytics/commit/5210d394409d17f981e0e4784653481a4d6237bf))
+* fixing tests for edge ([35b8958642980a70ec17316d8b88f970c47dc9b1](https://github.com/advanced-rest-client/app-analytics/commit/35b8958642980a70ec17316d8b88f970c47dc9b1))
+
+### Update
+
+* Adding type check for local storage for chrome apps ([809e22ac9753e606d2dbd0867bc6ab9982f05766](https://github.com/advanced-rest-client/app-analytics/commit/809e22ac9753e606d2dbd0867bc6ab9982f05766))
+* Adding type check for localStorage ([040004f363f0374aa05893e8590db610ed6edb00](https://github.com/advanced-rest-client/app-analytics/commit/040004f363f0374aa05893e8590db610ed6edb00))
+* Removed support for disabling GA. Remove element from the DOM instead. ([d6d04a56d63495b3b724f53eb355ccab7ccd46ef](https://github.com/advanced-rest-client/app-analytics/commit/d6d04a56d63495b3b724f53eb355ccab7ccd46ef))
+* Updating import paths to match web spec ([e19246bc8609ecd07ae5b451fe8c27106ca03c7c](https://github.com/advanced-rest-client/app-analytics/commit/e19246bc8609ecd07ae5b451fe8c27106ca03c7c))
+
+
+
