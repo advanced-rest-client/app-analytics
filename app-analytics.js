@@ -669,7 +669,7 @@ class AppAnalytics extends HTMLElement {
   }
   /**
    * Generated POST parameters based on a params
-   * @return {Array}
+   * @return {Object}
    */
   get _baseParams() {
     return this.__baseParams;
@@ -727,7 +727,7 @@ class AppAnalytics extends HTMLElement {
     super();
     this._sendHandler = this._sendHandler.bind(this);
 
-    this._baseParams = [];
+    this._baseParams = {};
     this._customMetrics = [];
     this._customDimensions = [];
 
