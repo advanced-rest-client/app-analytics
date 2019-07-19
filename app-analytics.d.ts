@@ -326,6 +326,12 @@ declare namespace LogicElements {
     appInstallerId: String|null;
 
     /**
+     * True if current environment has localStorage suppport.
+     * Chrome apps do not have localStorage property.
+     */
+    readonly hasLocalStorage: boolean|null|undefined;
+
+    /**
      * If set to true it will prints debug messages into the console.
      */
     debug: Boolean|null;
