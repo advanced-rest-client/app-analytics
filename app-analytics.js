@@ -11,11 +11,123 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
-import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
-import {FlattenedNodesObserver} from '../../@polymer/polymer/lib/utils/flattened-nodes-observer.js';
-import '../../@advanced-rest-client/uuid-generator/uuid-generator.js';
-import '../../@advanced-rest-client/connectivity-state/connectivity-state.js';
+import '@advanced-rest-client/uuid-generator/uuid-generator.js';
+/**
+ * **Required for all hit types.**
+ *
+ * The Protocol version. The current value is '1'. This will only change when there
+ * are changes made that are not backwards compatible.
+ *
+ * - Parameter: **v**
+ * - Example value: 1
+ * - Example usage: v=1
+ *
+ * @type {Number}
+ */
+const protocolVersion = 1;
+/**
+ * A map of parameter names to its descriptions.
+ * @type {Object}
+ */
+export const paramsMap = {
+  v: 'Protocol Version',
+  tid: 'Tracking ID / Web Property ID',
+  aip: 'Anonymize IP',
+  ds: 'Data Source',
+  qt: 'Queue Time',
+  z: 'Cache Buster',
+  cid: 'Client ID',
+  uid: 'User ID',
+  sc: 'Session Control',
+  uip: 'IP Override',
+  ua: 'User Agent Override',
+  geoip: 'Geographical Override',
+  dr: 'Document Referrer',
+  cn: 'Campaign Name',
+  cs: 'Campaign Source',
+  cm: 'Campaign Medium',
+  ck: 'Campaign Keyword',
+  cc: 'Campaign Content',
+  ci: 'Campaign ID',
+  gclid: 'Google AdWords ID',
+  dclid: 'Google Display Ads ID',
+  sr: 'Screen Resolution',
+  vp: 'Viewport size',
+  de: 'Document Encoding',
+  sd: 'Screen Colors',
+  ul: 'User Language',
+  je: 'Java Enabled',
+  fl: 'Flash Version',
+  t: 'Hit type',
+  ni: 'Non-Interaction Hit',
+  dl: 'Document location URL',
+  dh: 'Document Host Name',
+  dp: 'Document Path',
+  dt: 'Document Title',
+  cd: 'Screen Name',
+  linkid: 'Link ID',
+  an: 'Application Name',
+  aid: 'Application ID',
+  av: 'Application Version',
+  aiid: 'Application Installer ID',
+  ec: 'Event Category',
+  ea: 'Event Action',
+  el: 'Event Label',
+  ev: 'Event Value',
+  sn: 'Social Network',
+  sa: 'Social Action',
+  st: 'Social Action Target',
+  utc: 'User timing category',
+  utv: 'User timing variable name',
+  utt: 'User timing time',
+  utl: 'User timing label',
+  plt: 'Page Load Time',
+  dns: 'DNS Time',
+  pdt: 'Page Download Time',
+  rrt: 'Redirect Response Time',
+  tcp: 'TCP Connect Time',
+  srt: 'Server Response Time',
+  dit: 'DOM Interactive Time',
+  clt: 'Content Load Time',
+  exd: 'Exception Description',
+  exf: 'Is Exception Fatal?',
+  xid: 'Experiment ID',
+  xvar: 'Experiment Variant'
+};
+for (let i = 1; i < 201; i++) {
+  paramsMap['cd' + i] = 'Custom dimension #' + i;
+  paramsMap['cm' + i] = 'Custom metric #' + i;
+}
+
+function detectLocalStorage() {
+  /* global chrome */
+  if (typeof chrome !== 'undefined' && chrome.i18n) {
+    // Chrome apps have `chrome.i18n` property, regular website doesn't.
+    // This is to avoid annoying warning message in Chrome app.
+    return false;
+  }
+  try {
+    localStorage.getItem('test');
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+/**
+ * True if current environment has localStorage suppport.
+ * Chrome apps do not have localStorage property.
+ *
+ * @type {Boolean}
+ */
+export const hasLocalStorage = detectLocalStorage();
+/**
+ * List of hist to be send when came back from offline state.
+ * Note, this is in memory information only.
+ * The component do not sotres this information.
+ *
+ * @type {Array<Object>}
+ */
+export const offlineQueue = [];
 /**
  * `<app-analytics>` An element that support Google Analytics analysis
  *
@@ -152,7 +264,7 @@ import '../../@advanced-rest-client/connectivity-state/connectivity-state.js';
  * ```
  *
  * To send custom data with single hit only without creating `<app-analytics-custom>` children,
- * add `customDimensions` or `customMetrics` to the event detail object. Both objects must be
+ * add `_customDimensions` or `_customMetrics` to the event detail object. Both objects must be
  * an array of custom definition objects that includs index and value.
  *
  * ### Example
@@ -180,425 +292,500 @@ import '../../@advanced-rest-client/connectivity-state/connectivity-state.js';
  * @demo demo/index.html
  * @memberof ArcElements
  */
-class AppAnalytics extends PolymerElement {
-  static get template() {
-    return html`
-    <style>
-    :host {
-      display: none;
+class AppAnalytics extends HTMLElement {
+  /**
+   * Note, UUID generator is used only during the initialization and when
+   * client id is not set and there's no coirresponding entry in local storage.
+   * Otherwise it is unused.
+   * @return {Element} A reference to `uuid-generator` element.
+   */
+  get _uuid() {
+    if (!this.__uuid) {
+      this.__uuid = document.createElement('uuid-generator');
     }
-    </style>
-    <uuid-generator id="uuid"></uuid-generator>
-    <connectivity-state online="{{isOnline}}"></connectivity-state>
-    <slot></slot>
-`;
+    return this.__uuid;
   }
 
-  static get properties() {
-    return {
-      // If true the app probably is online. See `<connectivity-state>`.
-      isOnline: {type: Boolean, observer: '_onlineChanged'},
-      // Generated POST parameters based on a params
-      baseParams: {
-        type: Array,
-        readOnly: true,
-        value: function() {
-          return [];
-        }
-      },
-      /**
-       * The Client ID for the mearusement protocol.
-       *
-       * **It is required for all types of calls.**
-       *
-       * The value of this field should be a random UUID (version 4) as described
-       * in http://www.ietf.org/rfc/rfc4122.txt
-       *
-       * - Parameter: **cid**
-       * - Example value: 35009a79-1a05-49d7-b876-2b884d0f825b
-       * - Example usage: cid=35009a79-1a05-49d7-b876-2b884d0f825b
-       */
-      clientId: {
-        type: String,
-        observer: '_cidChanged',
-        notify: true
-      },
-      /**
-       * This is intended to be a known identifier for a user provided by the site owner/tracking
-       * library user. It must not itself be PII (personally identifiable information).
-       * The value should never be persisted in GA cookies or other Analytics provided storage.
-       *
-       * - Parameter: **uid**
-       * - Example value: as8eknlll
-       * - Example usage: uid=as8eknlll
-       *
-       */
-      userId: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * **Required for all hit types.**
-       *
-       * The Protocol version. The current value is '1'. This will only change when there
-       * are changes made that are not backwards compatible.
-       *
-       * - Parameter: **v**
-       * - Example value: 1
-       * - Example usage: v=1
-       */
-      protocolVersion: {
-        type: String,
-        value: '1',
-        readOnly: true
-      },
-      /**
-       * **Required for all hit types.**
-       *
-       * The tracking ID / web property ID. The format is UA-XXXX-Y.
-       * All collected data is associated by this ID.
-       *
-       * - Parameter: **tid**
-       * - Example value: UA-XXXX-Y
-       * - Example usage: tid=UA-XXXX-Y
-       */
-      trackingId: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * When present, the IP address of the sender will be anonymized.
-       * For example, the IP will be anonymized if any of the following parameters are present in
-       * the payload: &aip=, &aip=0, or &aip=1
-       *
-       * - Parameter: **aip**
-       * - Example value: 1
-       * - Example usage: aip=1
-       */
-      anonymizeIp: {
-        type: Boolean,
-        value: false,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Indicates the data source of the hit. Hits sent from analytics.js will have data source
-       * set to 'web'; hits sent from one of the mobile SDKs will have data source set to 'app'.
-       *
-       * - Parameter: **ds**
-       * - Example value: call center
-       * - Example usage: ds=call%20center
-       */
-      dataSource: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Used to send a random number in GET requests to ensure browsers and proxies
-       * don't cache hits.
-       *
-       * - Parameter: **z**
-       * - Example value: 289372387623
-       * - Example usage: z=289372387623
-       */
-      useCacheBooster: Boolean,
-      /**
-       * Specifies which referral source brought traffic to a website. This value is also used to
-       * compute the traffic source. The format of this value is a URL.
-       *
-       * - Parameter: **dr**
-       * - Example value: http://example.com
-       * - Example usage: dr=http%3A%2F%2Fexample.com
-       */
-      referrer: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Specifies the campaign name.
-       *
-       * - Parameter: **cn**
-       * - Example value: (direct)
-       * - Example usage: cn=%28direct%29
-       */
-      campaignName: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Specifies the campaign source.
-       *
-       * - Parameter: **cs**
-       * - Example value: (direct)
-       * - Example usage: cs=%28direct%29
-       */
-      campaignSource: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Specifies the campaign medium.
-       *
-       * - Parameter: **cm**
-       * - Example value: organic
-       * - Example usage: cm=organic
-       */
-      campaignMedium: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Specifies the application version.
-       *
-       * - Parameter: **av**
-       * - Example value: 1.2
-       * - Example usage: av=1.2
-       */
-      appVersion: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Specifies the application name. This field is required for any hit that has app related
-       * data (i.e., app version, app ID, or app installer ID). For hits sent to web properties,
-       * this field is optional.
-       *
-       * - Parameter: **an**
-       * - Example My App
-       * - Example usage: an=My%20App
-       */
-      appName: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Application identifier.
-       *
-       * - Parameter: **aid**
-       * - Example value: com.company.app
-       * - Example usage: aid=com.company.app
-       */
-      appId: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Application installer identifier.
-       *
-       * - Parameter: **aiid**
-       * - Example value: com.platform.vending
-       * - Example usage: aiid=com.platform.vending
-       */
-      appInstallerId: {
-        type: String,
-        observer: '_configureBaseParams'
-      },
-      /**
-       * Each custom metric has an associated index. There is a maximum of 20 custom
-       * metrics (200 for Analytics 360 accounts). The metric index must be a positive
-       * integer between 1 and 200, inclusive.
-       *
-       * - Parameter: **cm<metricIndex>**
-       * - Example value: 47
-       * - Example usage: cm1=47
-       */
-      customMetrics: {
-        type: Array,
-        readOnly: true,
-        value: function() {
-          return [];
-        }
-      },
-      /**
-       * Each custom dimension has an associated index. There is a maximum of 20 custom
-       * dimensions (200 for Analytics 360 accounts). The dimension index must be a positive
-       * integer between 1 and 200, inclusive.
-       *
-       * - Parameter: **cd<dimensionIndex>**
-       * - Example value: Sports
-       * - Example usage: cd1=Sports
-       */
-      customDimensions: {
-        type: Array,
-        readOnly: true,
-        value: function() {
-          return [];
-        }
-      },
-      /**
-       * True if current environment has localStorage suppport.
-       * Chrome apps do not have localStorage property.
-       */
-      hasLocalStorage: {
-        type: Boolean,
-        readOnly: true,
-        value: function() {
-          /* global chrome */
-          if (typeof chrome !== 'undefined' && chrome.i18n) {
-            // Chrome apps have `chrome.i18n` property, regular website doesn't.
-            // This is to avoid annoying warning message in Chrome app.
-            return false;
-          }
-          try {
-            localStorage.getItem('test');
-            return true;
-          } catch (_) {
-            return false;
-          }
-        }
-      },
-      /**
-       * If set to true it will prints debug messages into the console.
-       */
-      debug: Boolean,
-      /**
-       * If set it will send the data to GA's debug endpoint
-       * and the request won't be actually saved but only validated
-       * and the validation results will be fired in the
-       * `aapp-analytics-structure-debug`
-       * event in the detail's `debug` property.
-       */
-      debugEndpoint: Boolean,
-      _paramsMap: {
-        type: Object,
-        readOnly: true,
-        value: function() {
-          const data = {
-            v: 'Protocol Version',
-            tid: 'Tracking ID / Web Property ID',
-            aip: 'Anonymize IP',
-            ds: 'Data Source',
-            qt: 'Queue Time',
-            z: 'Cache Buster',
-            cid: 'Client ID',
-            uid: 'User ID',
-            sc: 'Session Control',
-            uip: 'IP Override',
-            ua: 'User Agent Override',
-            geoip: 'Geographical Override',
-            dr: 'Document Referrer',
-            cn: 'Campaign Name',
-            cs: 'Campaign Source',
-            cm: 'Campaign Medium',
-            ck: 'Campaign Keyword',
-            cc: 'Campaign Content',
-            ci: 'Campaign ID',
-            gclid: 'Google AdWords ID',
-            dclid: 'Google Display Ads ID',
-            sr: 'Screen Resolution',
-            vp: 'Viewport size',
-            de: 'Document Encoding',
-            sd: 'Screen Colors',
-            ul: 'User Language',
-            je: 'Java Enabled',
-            fl: 'Flash Version',
-            t: 'Hit type',
-            ni: 'Non-Interaction Hit',
-            dl: 'Document location URL',
-            dh: 'Document Host Name',
-            dp: 'Document Path',
-            dt: 'Document Title',
-            cd: 'Screen Name',
-            linkid: 'Link ID',
-            an: 'Application Name',
-            aid: 'Application ID',
-            av: 'Application Version',
-            aiid: 'Application Installer ID',
-            ec: 'Event Category',
-            ea: 'Event Action',
-            el: 'Event Label',
-            ev: 'Event Value',
-            sn: 'Social Network',
-            sa: 'Social Action',
-            st: 'Social Action Target',
-            utc: 'User timing category',
-            utv: 'User timing variable name',
-            utt: 'User timing time',
-            utl: 'User timing label',
-            plt: 'Page Load Time',
-            dns: 'DNS Time',
-            pdt: 'Page Download Time',
-            rrt: 'Redirect Response Time',
-            tcp: 'TCP Connect Time',
-            srt: 'Server Response Time',
-            dit: 'DOM Interactive Time',
-            clt: 'Content Load Time',
-            exd: 'Exception Description',
-            exf: 'Is Exception Fatal?',
-            xid: 'Experiment ID',
-            xvar: 'Experiment Variant'
-          };
-          for (let i = 1; i < 201; i++) {
-            data['cd' + i] = 'Custom dimension #' + i;
-            data['cm' + i] = 'Custom metric #' + i;
-          }
-          return data;
-        }
-      },
-      /**
-       * If set disables Google Analytics reporting.
-       * This information is stored in localStorage. As long as this
-       * information is not cleared it is respected and data are not send to GA
-       * server.
-       */
-      disabled: {
-        type: Boolean,
-        observer: '_disabledChanged'
-      },
-      /**
-       * List of hist to be send when came back from offline state.
-       * Note, this is in memory information only.
-       * The component do not sotres this information.
-       */
-      _offlineQueue: Array
-    };
+  static get observedAttributes() {
+    return [
+      'clientid',
+      'userid',
+      'trackingid',
+      'anonymizeip',
+      'datasource',
+      'usecachebooster',
+      'referrer',
+      'campaignname',
+      'campaignsource',
+      'campaignmedium',
+      'appversion',
+      'appname',
+      'appid',
+      'appinstallerid',
+      'debug',
+      'debugendpoint',
+      'disabled',
+      'offline'
+    ];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    switch (name) {
+      case 'clientid': this._setStringProperty('clientId', newValue); break;
+      case 'userid': this._setStringProperty('userId', newValue); break;
+      case 'trackingid': this._setStringProperty('trackingId', newValue); break;
+      case 'datasource': this._setStringProperty('dataSource', newValue); break;
+      case 'campaignname': this._setStringProperty('campaignName', newValue); break;
+      case 'campaignsource': this._setStringProperty('campaignSource', newValue); break;
+      case 'campaignmedium': this._setStringProperty('campaignMedium', newValue); break;
+      case 'appversion': this._setStringProperty('appVersion', newValue); break;
+      case 'appname': this._setStringProperty('appName', newValue); break;
+      case 'appid': this._setStringProperty('appId', newValue); break;
+      case 'appinstallerid': this._setStringProperty('appInstallerId', newValue); break;
+      case 'referrer': this._setStringProperty(name, newValue); break;
+      case 'anonymizeip': this._setBooleanProperty('anonymizeIp', newValue); break;
+      case 'usecachebooster': this._setBooleanProperty('useCacheBooster', newValue); break;
+      case 'debugendpoint': this._setBooleanProperty('debugEndpoint', newValue); break;
+      case 'debug':
+      case 'disabled':
+      case 'offline':
+        this._setBooleanProperty(name, newValue);
+        break;
+    }
+  }
+
+  _setStringProperty(name, value) {
+    if (value === null) {
+      this[name] = undefined;
+    } else {
+      this[name] = value;
+    }
+  }
+
+  _setBooleanProperty(name, value) {
+    if (value === null) {
+      this[name] = false;
+    } else {
+      this[name] = true;
+    }
+  }
+  /**
+   * The Client ID for the mearusement protocol.
+   *
+   * **It is required for all types of calls.**
+   *
+   * The value of this field should be a random UUID (version 4) as described
+   * in http://www.ietf.org/rfc/rfc4122.txt
+   *
+   * - Parameter: **cid**
+   * - Example value: 35009a79-1a05-49d7-b876-2b884d0f825b
+   * - Example usage: cid=35009a79-1a05-49d7-b876-2b884d0f825b
+   *
+   * @return {String}
+   */
+  get clientId() {
+    return this._clientId;
+  }
+
+  set clientId(value) {
+    this._clientId = value;
+    this._cidChanged(value);
+    this._configureBaseParams();
+  }
+  /**
+   * This is intended to be a known identifier for a user provided by the site owner/tracking
+   * library user. It must not itself be PII (personally identifiable information).
+   * The value should never be persisted in GA cookies or other Analytics provided storage.
+   *
+   * - Parameter: **uid**
+   * - Example value: as8eknlll
+   * - Example usage: uid=as8eknlll
+   *
+   * @return {String}
+   */
+  get userId() {
+    return this._userId;
+  }
+
+  set userId(value) {
+    this._userId = value;
+    this._configureBaseParams();
+  }
+  /**
+   * **Required for all hit types.**
+   *
+   * The tracking ID / web property ID. The format is UA-XXXX-Y.
+   * All collected data is associated by this ID.
+   *
+   * - Parameter: **tid**
+   * - Example value: UA-XXXX-Y
+   * - Example usage: tid=UA-XXXX-Y
+   *
+   * @return {String}
+   */
+  get trackingId() {
+    return this._trackingId;
+  }
+
+  set trackingId(value) {
+    this._trackingId = value;
+    this._configureBaseParams();
+  }
+  /**
+   * When present, the IP address of the sender will be anonymized.
+   * For example, the IP will be anonymized if any of the following parameters are present in
+   * the payload: &aip=, &aip=0, or &aip=1
+   *
+   * - Parameter: **aip**
+   * - Example value: 1
+   * - Example usage: aip=1
+   * @return {Boolean}
+   */
+  get anonymizeIp() {
+    return this._anonymizeIp;
+  }
+
+  set anonymizeIp(value) {
+    this._anonymizeIp = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Indicates the data source of the hit. Hits sent from analytics.js will have data source
+   * set to 'web'; hits sent from one of the mobile SDKs will have data source set to 'app'.
+   *
+   * - Parameter: **ds**
+   * - Example value: call center
+   * - Example usage: ds=call%20center
+   *
+   * @return {String}
+   */
+  get dataSource() {
+    return this._dataSource;
+  }
+
+  set dataSource(value) {
+    this._dataSource = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Used to send a random number in GET requests to ensure browsers and proxies
+   * don't cache hits.
+   *
+   * - Parameter: **z**
+   * - Example value: 289372387623
+   * - Example usage: z=289372387623
+   *
+   * @return {Boolean}
+   */
+  get useCacheBooster() {
+    return this._useCacheBooster;
+  }
+
+  set useCacheBooster(value) {
+    this._useCacheBooster = value;
+  }
+  /**
+   * Specifies which referral source brought traffic to a website. This value is also used to
+   * compute the traffic source. The format of this value is a URL.
+   *
+   * - Parameter: **dr**
+   * - Example value: http://example.com
+   * - Example usage: dr=http%3A%2F%2Fexample.com
+   *
+   * @return {String}
+   */
+  get referrer() {
+    return this._referrer;
+  }
+
+  set referrer(value) {
+    this._referrer = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Specifies the campaign name.
+   *
+   * - Parameter: **cn**
+   * - Example value: (direct)
+   * - Example usage: cn=%28direct%29
+   *
+   * @return {String}
+   */
+  get campaignName() {
+    return this._campaignName;
+  }
+
+  set campaignName(value) {
+    this._campaignName = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Specifies the campaign source.
+   *
+   * - Parameter: **cs**
+   * - Example value: (direct)
+   * - Example usage: cs=%28direct%29
+   *
+   * @return {String}
+   */
+  get campaignSource() {
+    return this._campaignSource;
+  }
+
+  set campaignSource(value) {
+    this._campaignSource = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Specifies the campaign medium.
+   *
+   * - Parameter: **cm**
+   * - Example value: organic
+   * - Example usage: cm=organic
+   *
+   * @return {String}
+   */
+  get campaignMedium() {
+    return this._campaignMedium;
+  }
+
+  set campaignMedium(value) {
+    this._campaignMedium = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Specifies the application version.
+   *
+   * - Parameter: **av**
+   * - Example value: 1.2
+   * - Example usage: av=1.2
+   */
+  get appVersion() {
+    return this._appVersion;
+  }
+
+  set appVersion(value) {
+    this._appVersion = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Specifies the application name. This field is required for any hit that has app related
+   * data (i.e., app version, app ID, or app installer ID). For hits sent to web properties,
+   * this field is optional.
+   *
+   * - Parameter: **an**
+   * - Example My App
+   * - Example usage: an=My%20App
+   */
+  get appName() {
+    return this._appName;
+  }
+
+  set appName(value) {
+    this._appName = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Application identifier.
+   *
+   * - Parameter: **aid**
+   * - Example value: com.company.app
+   * - Example usage: aid=com.company.app
+   */
+  get appId() {
+    return this._appId;
+  }
+
+  set appId(value) {
+    this._appId = value;
+    this._configureBaseParams();
+  }
+  /**
+   * Application installer identifier.
+   *
+   * - Parameter: **aiid**
+   * - Example value: com.platform.vending
+   * - Example usage: aiid=com.platform.vending
+   */
+  get appInstallerId() {
+    return this._appInstallerId;
+  }
+
+  set appInstallerId(value) {
+    this._appInstallerId = value;
+    this._configureBaseParams();
+  }
+  /**
+   * If set to true it will prints debug messages into the console.
+   */
+  get debug() {
+    return this._debug;
+  }
+
+  set debug(value) {
+    this._debug = value;
+  }
+  /**
+   * If set it will send the data to GA's debug endpoint
+   * and the request won't be actually saved but only validated
+   * and the validation results will be fired in the
+   * `aapp-analytics-structure-debug`
+   * event in the detail's `debug` property.
+   */
+  get debugEndpoint() {
+    return this._debugEndpoint;
+  }
+
+  set debugEndpoint(value) {
+    this._debugEndpoint = value;
+  }
+  /**
+   * If set disables Google Analytics reporting.
+   * This information is stored in localStorage. As long as this
+   * information is not cleared it is respected and data are not send to GA
+   * server.
+   * @return {Boolean}
+   */
+  get disabled() {
+    return this._disabled;
+  }
+
+  set disabled(value) {
+    this._disabled = value;
+    this._disabledChanged(value);
+  }
+  /**
+   * When set it queues requests to GA in memory and attempts to send the requests
+   * again when this flag is removed.
+   * @return {Boolean}
+   */
+  get offline() {
+    return this._offline;
+  }
+
+  set offline(value) {
+    this._offline = value;
+    this._offlineChanged(value);
+  }
+  /**
+   * Generated POST parameters based on a params
+   * @return {Array}
+   */
+  get _baseParams() {
+    return this.__baseParams;
+  }
+
+  set _baseParams(value) {
+    this.__baseParams = value;
+  }
+  /**
+   * Each custom metric has an associated index. There is a maximum of 20 custom
+   * metrics (200 for Analytics 360 accounts). The metric index must be a positive
+   * integer between 1 and 200, inclusive.
+   *
+   * - Parameter: **cm<metricIndex>**
+   * - Example value: 47
+   * - Example usage: cm1=47
+   */
+  get _customMetrics() {
+    return this.__customMetrics;
+  }
+
+  set _customMetrics(value) {
+    this.__customMetrics = value;
+  }
+  /**
+   * Each custom dimension has an associated index. There is a maximum of 20 custom
+   * dimensions (200 for Analytics 360 accounts). The dimension index must be a positive
+   * integer between 1 and 200, inclusive.
+   *
+   * - Parameter: **cd<dimensionIndex>**
+   * - Example value: Sports
+   * - Example usage: cd1=Sports
+   */
+  get _customDimensions() {
+    return this.__customDimensions;
+  }
+
+  set _customDimensions(value) {
+    this.__customDimensions = value;
+  }
+  /**
+   * @return {String} Local storage key for clientId.
+   */
+  get cidKey() {
+    return 'apic.ga.cid';
+  }
+  /**
+   * @return {String} Local storage key for disabled.
+   */
+  get disabledKey() {
+    return 'apic.ga.disabled';
   }
 
   constructor() {
     super();
-    this._customPropertyChanged = this._customPropertyChanged.bind(this);
-    this._customPropertyRemoved = this._customPropertyRemoved.bind(this);
     this._sendHandler = this._sendHandler.bind(this);
+
+    this._baseParams = [];
+    this._customMetrics = [];
+    this._customDimensions = [];
+
+    const config = {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      attributeOldValue: true
+    };
+    this._observer = new MutationObserver((mutations) => this._childrenUpdated(mutations));
+    this._observer.observe(this, config);
+
+    this._restoreConfiguration();
   }
 
   connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener('app-analytics-custom-changed', this._customPropertyChanged);
-    this.addEventListener('app-analytics-custom-removed', this._customPropertyRemoved);
+    if (!this.hasAttribute('aria-hidden')) {
+      this.setAttribute('aria-hidden', 'true');
+    }
     window.addEventListener('send-analytics', this._sendHandler);
-    this._restoreConfiguration();
 
-    this._observer = new FlattenedNodesObserver(this.shadowRoot.querySelector('slot'), (info) => {
-      info.addedNodes = info.addedNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE);
-      info.removedNodes = info.removedNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE);
-      this._processAddedNodes(info.addedNodes);
-      this._processRemovedNodes(info.removedNodes);
-    });
+    if (!this.__initialized) {
+      this.__initialized = true;
+      setTimeout(() => {
+        this._processInitialNodes();
+      });
+    }
   }
 
   disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener('app-analytics-custom-changed', this._customPropertyChanged);
-    this.removeEventListener('app-analytics-custom-removed', this._customPropertyRemoved);
     window.removeEventListener('send-analytics', this._sendHandler);
-    this._observer.disconnect();
+    this.__uuid = undefined;
   }
-
-  get cidKey() {
-    return 'apic.ga.cid';
-  }
-
-  get disabledKey() {
-    return 'apic.ga.disabled';
+  /**
+   * A mutation observer callback function called when children or attributes changed.
+   * It processes child nodes depending on mutation type and change record.
+   * @param {Array<MutationRecord>} mutations
+   */
+  _childrenUpdated(mutations) {
+    for (const mutation of mutations) {
+      if (mutation.target === this && mutation.type === 'childList') {
+        this._processAddedNodes(mutation.addedNodes);
+        this._processRemovedNodes(mutation.removedNodes);
+      } else if (mutation.target !== this && mutation.type === 'attributes') {
+        this._processChildAttribute(mutation);
+      }
+    }
   }
 
   /**
    * Restores data stored in localStorage.
    */
   _restoreConfiguration() {
-    if (this.clientId || !this.hasLocalStorage) {
+    /* istanbul ignore if */
+    if (this.clientId || !hasLocalStorage) {
       return;
     }
-    let disabled = localStorage.getItem(this.disabledKey);
+    const disabled = localStorage.getItem(this.disabledKey);
     if (disabled === 'true') {
       this.disabled = true;
       // No need to restore cid at this point
@@ -606,9 +793,9 @@ class AppAnalytics extends PolymerElement {
     }
     let cid = localStorage.getItem(this.cidKey);
     if (!cid) {
-      cid = this.$.uuid.generate();
+      cid = this._uuid.generate();
     }
-    this.set('clientId', cid);
+    this.clientId = cid;
   }
   /**
    * Stores cid value in localStorage if the value is different.
@@ -617,11 +804,12 @@ class AppAnalytics extends PolymerElement {
    */
   _cidChanged(cid) {
     this._configureBaseParams();
-    if (!this.hasLocalStorage) {
+    /* istanbul ignore if */
+    if (!hasLocalStorage) {
       return;
     }
     cid = cid || '';
-    let localCid = localStorage.getItem(this.cidKey);
+    const localCid = localStorage.getItem(this.cidKey);
     if (cid !== localCid) {
       localStorage.setItem(this.cidKey, cid);
     }
@@ -638,10 +826,11 @@ class AppAnalytics extends PolymerElement {
       this._restoreConfiguration();
       this._configureBaseParams();
     }
-    if (!this.hasLocalStorage) {
+    /* istanbul ignore if */
+    if (!hasLocalStorage) {
       return;
     }
-    let localState = localStorage.getItem(this.disabledKey);
+    const localState = localStorage.getItem(this.disabledKey);
     if (localState !== String(state)) {
       localStorage.setItem(this.disabledKey, state);
     }
@@ -654,18 +843,20 @@ class AppAnalytics extends PolymerElement {
     if (!nodes || !nodes.length) {
       return;
     }
-    nodes.forEach((i) => {
-      if (i.nodeName !== 'APP-ANALYTICS-CUSTOM') {
-        return;
+    for (let i = 0, len = nodes.length; i < len; i++) {
+      const node = nodes[i];
+      if (node.nodeName !== 'APP-ANALYTICS-CUSTOM') {
+        continue;
       }
-      if (i.index && i.type) {
-        if (i.type === 'dimension') {
-          this.addCustomDimension(i.index, i.value);
-        } else if (i.type === 'metric') {
-          this.addCustomMetric(i.index, i.value);
+      node.setAttribute('aria-hidden', 'true');
+      if (node.index && node.type) {
+        if (node.type === 'dimension') {
+          this.addCustomDimension(node.index, node.value);
+        } else if (node.type === 'metric') {
+          this.addCustomMetric(node.index, node.value);
         }
       }
-    });
+    }
   }
   /**
    * Remove custom dimensions.
@@ -679,34 +870,57 @@ class AppAnalytics extends PolymerElement {
     if (!nodes || !nodes.length) {
       return;
     }
-    nodes.forEach((i) => {
-      if (i.nodeName !== 'APP-ANALYTICS-CUSTOM') {
+    for (let i = 0, len = nodes.length; i < len; i++) {
+      const node = nodes[i];
+      if (node.nodeName !== 'APP-ANALYTICS-CUSTOM') {
         return;
       }
-      if (i.index && i.type) {
-        if (i.type === 'dimension') {
-          this.removeCustomDimension(i.index);
-        } else if (i.type === 'metric') {
-          this.removeCustomMetric(i.index);
+      if (node.index && node.type) {
+        if (node.type === 'dimension') {
+          this.removeCustomDimension(node.index);
+        } else if (node.type === 'metric') {
+          this.removeCustomMetric(node.index);
         }
       }
-    });
-  }
-  // Handler for app-analytics-custom-changed event. Registers a new custom property.
-  _customPropertyChanged(e) {
-    const d = e.detail;
-    switch (d.type) {
-      case 'dimension': this.addCustomDimension(d.index, d.value); break;
-      case 'metric': this.addCustomMetric(d.index, d.value); break;
     }
   }
-  // Handler for app-analytics-custom-removed event. Unregisters a custom property.
-  _customPropertyRemoved(e) {
-    e.stopPropagation();
-    const {type, index} = e.detail;
-    switch (type) {
-      case 'dimension': this.removeCustomDimension(index); break;
-      case 'metric': this.removeCustomMetric(index); break;
+  /**
+   * Processes `MutationRecord` for attribute change
+   * @param {MutationRecord} mutation A mutation record that triggered the callback
+   */
+  _processChildAttribute(mutation) {
+    if (['index', 'value', 'type'].indexOf(mutation.attributeName) === -1) {
+      return;
+    }
+    const target = mutation.target;
+    const type = target.getAttribute('type');
+    const index = Number(target.getAttribute('index'));
+    if (isNaN(index)) {
+      return;
+    }
+    if (mutation.attributeName === 'type' && mutation.oldValue) {
+      // Removes old type from the corresponding array.
+      if (mutation.oldValue === 'dimension') {
+        this.removeCustomDimension(index);
+      } else if (mutation.oldValue === 'metric') {
+        this.removeCustomMetric(index);
+      }
+    } else if (mutation.attributeName === 'index' && mutation.oldValue) {
+      // Removes previously used index from the corresponding array.
+      const index = Number(mutation.oldValue);
+      if (!isNaN(index)) {
+        if (type === 'dimension') {
+          this.removeCustomDimension(index);
+        } else if (type === 'metric') {
+          this.removeCustomMetric(index);
+        }
+      }
+    }
+    const value = target.getAttribute('value');
+    if (type === 'dimension') {
+      this.addCustomDimension(index, value);
+    } else if (type === 'metric') {
+      this.addCustomMetric(index, value);
     }
   }
   /**
@@ -721,26 +935,7 @@ class AppAnalytics extends PolymerElement {
    * @param {Strnig} value Value of the custom dimension to set.
    */
   addCustomDimension(index, value) {
-    index = Number(index);
-    if (index !== index) {
-      throw new Error('Index is not a number.');
-    }
-    if (index <= 0 || index > 200) {
-      throw new Error('Index out of bounds');
-    }
-    const cd = this.customDimensions || [];
-    const pos = cd.findIndex((i) => i.index === index);
-    if (pos !== -1) {
-      if (this.customDimensions[pos].value !== value) {
-        this.set('customDimensions.' + pos + '.value', value);
-      }
-    } else {
-      this.push('customDimensions', {
-        index: index,
-        value: value
-      });
-    }
-    this._configureBaseParams();
+    this._addCustom('_customDimensions', index, value);
   }
   /**
    * Removes from this instance custom dimension for given index.
@@ -748,14 +943,7 @@ class AppAnalytics extends PolymerElement {
    * @param {Number} index Index of the custom dimension. The index has to be in range 1 - 200.
    */
   removeCustomDimension(index) {
-    index = Number(index);
-    const cd = this.customDimensions || [];
-    const pos = cd.findIndex((i) => i.index === index);
-    if (pos === -1) {
-      return;
-    }
-    this.splice('customDimensions', pos, 1);
-    this._configureBaseParams();
+    this._removeCustom('_customDimensions', index);
   }
   /**
    * Sets custom metric to be send with the hit.
@@ -769,27 +957,10 @@ class AppAnalytics extends PolymerElement {
    * @param {Strnig} value Value of the custom metric to set.
    */
   addCustomMetric(index, value) {
-    index = Number(index);
-    if (index !== index) {
-      throw new Error('Index is not a number.');
+    if (!isNaN(value)) {
+      value = Number(value);
     }
-    if (index <= 0 || index > 200) {
-      throw new Error('Index out of bounds');
-    }
-    const cm = this.customMetrics || [];
-    const pos = cm.findIndex((i) => i.index === index);
-    if (pos !== -1) {
-      if (this.customMetrics[pos].value !== value) {
-        this.set('customMetrics.' + pos + '.value', value);
-        this._configureBaseParams();
-      }
-    } else {
-      this.push('customMetrics', {
-        index: index,
-        value: value
-      });
-    }
-    this._configureBaseParams();
+    this._addCustom('_customMetrics', index, value);
   }
   /**
    * Removes from this instance custom metric for given index.
@@ -797,13 +968,53 @@ class AppAnalytics extends PolymerElement {
    * @param {Number} index Index of the custom metric. The index has to be in range 1 - 200.
    */
   removeCustomMetric(index) {
+    this._removeCustom('_customMetrics', index);
+  }
+  /**
+   * Adds custom metric / dimension to the corresponding array.
+   * @param {String} prop The name of the property with the array of custom items.
+   * @param {Number} index Index of the custom property. Free version of GA allows up to 20
+   * custom metrics/dimensions and up to 200 in premium. The index has to be in range 1 - 200.
+   * @param {Strnig} value Value of the custom property to set.
+   */
+  _addCustom(prop, index, value) {
     index = Number(index);
-    const cm = this.customMetrics || [];
-    const pos = cm.findIndex((i) => i.index === index);
+    if (index !== index) {
+      throw new Error('Index is not a number.');
+    }
+    if (index <= 0 || index > 200) {
+      throw new Error('Index out of bounds');
+    }
+    const custom = this[prop] || [];
+    const pos = custom.findIndex((i) => i.index === index);
+    if (pos !== -1) {
+      if (this[prop][pos].value !== value) {
+        this[prop][pos].value = value;
+      } else {
+        return;
+      }
+    } else {
+      this[prop].push({
+        index: index,
+        value: value
+      });
+    }
+    this._configureBaseParams();
+  }
+  /**
+   * Removes from this instance custom metric/dimension for given index.
+   *
+   * @param {String} prop The name of the property with the array of custom items.
+   * @param {Number} index Index of the custom metric. The index has to be in range 1 - 200.
+   */
+  _removeCustom(prop, index) {
+    index = Number(index);
+    const custom = this[prop] || [];
+    const pos = custom.findIndex((i) => i.index === index);
     if (pos === -1) {
       return;
     }
-    this.splice('customMetrics', pos, 1);
+    this[prop].splice(pos, 1);
     this._configureBaseParams();
   }
   /**
@@ -811,7 +1022,7 @@ class AppAnalytics extends PolymerElement {
    *
    * @param {String} name Screen name.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -831,7 +1042,7 @@ class AppAnalytics extends PolymerElement {
    * @param {String?} label Specifies the event label. Optional value.
    * @param {Number?} value Specifies the event value. Values must be non-negative. Optional.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -866,7 +1077,7 @@ class AppAnalytics extends PolymerElement {
    * @param {String} description A description of the exception.
    * @param {Boolean} fatal Specifies whether the exception was fatal.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -889,7 +1100,7 @@ class AppAnalytics extends PolymerElement {
    * @param {String} target Specifies the target of a social interaction. This value is
    * typically a URL but can be any text.
    * @param {Object} opts Custom data definition. It should be an object that may contain two
-   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -925,7 +1136,7 @@ class AppAnalytics extends PolymerElement {
    * **required**
    * @param {String} label Specifies the user timing label.
    * @param {Object} cmOpts Custom data definition. It should be an object that may contain two
-   * keys: `customDimensions` and `customMetrics`. Both as an array of objects. Each object must
+   * keys: `_customDimensions` and `_customMetrics`. Both as an array of objects. Each object must
    * contain `index` property - representing custom data index in GA - and `value` property -
    * representing value of the property.
    * @return {Promise}
@@ -966,13 +1177,13 @@ class AppAnalytics extends PolymerElement {
     if (!opts) {
       return;
     }
-    if (opts.customDimensions && opts.customDimensions.length) {
-      opts.customDimensions.forEach((item) => {
+    if (opts._customDimensions && opts._customDimensions.length) {
+      opts._customDimensions.forEach((item) => {
         data['cd' + item.index] = item.value;
       });
     }
-    if (opts.customMetrics && opts.customMetrics.length) {
-      opts.customMetrics.forEach((item) => {
+    if (opts._customMetrics && opts._customMetrics.length) {
+      opts._customMetrics.forEach((item) => {
         data['cm' + item.index] = item.value;
       });
     }
@@ -993,7 +1204,7 @@ class AppAnalytics extends PolymerElement {
     }
     params.t = type;
     this._processParams(params);
-    const post = Object.assign({}, this.baseParams, params);
+    const post = Object.assign({}, this._baseParams, params);
     const body = this._createBody(post);
     if (this.debug) {
       console.group('Running command for ', type);
@@ -1013,11 +1224,11 @@ class AppAnalytics extends PolymerElement {
     }
     const d = e.detail;
     const opts = {};
-    if (d.customDimensions) {
-      opts.customDimensions = d.customDimensions;
+    if (d._customDimensions) {
+      opts._customDimensions = d._customDimensions;
     }
-    if (d.customMetrics) {
-      opts.customMetrics = d.customMetrics;
+    if (d._customMetrics) {
+      opts._customMetrics = d._customMetrics;
     }
     switch (d.type) {
       case 'screenview':
@@ -1079,7 +1290,7 @@ class AppAnalytics extends PolymerElement {
 
   _configureBaseParams() {
     const data = {
-      v: this.protocolVersion,
+      v: protocolVersion,
       tid: this.trackingId,
       cid: this.clientId,
       ul: navigator.language,
@@ -1125,27 +1336,27 @@ class AppAnalytics extends PolymerElement {
     if (this.appInstallerId) {
       data.aiid = this.encodeQueryString(this.appInstallerId);
     }
-    if (this.customMetrics.length) {
-      this.customMetrics.forEach((cm) => {
+    if (this._customMetrics.length) {
+      this._customMetrics.forEach((cm) => {
         data['cm' + cm.index] = this.encodeQueryString(cm.value);
       });
     }
-    if (this.customDimensions.length) {
-      this.customDimensions.forEach((cd) => {
+    if (this._customDimensions.length) {
+      this._customDimensions.forEach((cd) => {
         data['cd' + cd.index] = this.encodeQueryString(cd.value);
       });
     }
     if (this.debug) {
       console.info('[GA] Configuring base object', data);
     }
-    this._setBaseParams(data);
+    this._baseParams = data;
   }
 
   _printParamsTable(list) {
     const map = {};
     const debugList = [];
     Object.keys(list).forEach((param) => {
-      const name = this._paramsMap[param] || param;
+      const name = paramsMap[param] || param;
       const value = decodeURIComponent(list[param]);
       map[param] = {
         value: value,
@@ -1169,17 +1380,14 @@ class AppAnalytics extends PolymerElement {
     if (this.disabled) {
       return Promise.resolve();
     }
-    const offline = !this.isOnline;
+    const offline = this.offline;
     if (offline) {
-      if (!this._offlineQueue) {
-        this._offlineQueue = [];
-      }
-      this._offlineQueue.push(body);
+      offlineQueue.push(body);
       return Promise.resolve();
     }
     const init = {
       method: 'POST',
-      headers: {'content-type': 'application/x-www-form-urlencoded'},
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
       body: body
     };
     let url = 'https://www.google-analytics.com';
@@ -1196,21 +1404,16 @@ class AppAnalytics extends PolymerElement {
       return Promise.resolve(init);
     }
 
-    return fetch(url, init)
-    .then((response) => {
+    return fetch(url, init).then((response) => {
       if (response.status !== 200) {
         if (!offline) {
-          if (!this._offlineQueue) {
-            this._offlineQueue = [];
-          }
-          this._offlineQueue.push(body);
+          offlineQueue.push(body);
         } else {
           throw new Error('Unable send data.');
         }
       }
       if (this.debugEndpoint) {
-        return response.json()
-        .then((result) => {
+        return response.json().then((result) => {
           this.dispatchEvent(new CustomEvent('app-analytics-structure-debug', {
             detail: {
               debug: result
@@ -1218,34 +1421,27 @@ class AppAnalytics extends PolymerElement {
           }));
         });
       }
-    })
-    .catch(() => {
+    }).catch(() => {
       if (!navigator.onLine && !offline) {
-        if (!this._offlineQueue) {
-          this._offlineQueue = [];
-        }
-        this._offlineQueue.push(body);
+        offlineQueue.push(body);
         return;
       }
       throw new Error('Unable to send data');
     });
   }
 
-  _onlineChanged(value) {
-    if (!value) {
-      return;
-    }
-    if (!this._offlineQueue || !this._offlineQueue.length) {
+  _offlineChanged(value) {
+    if (value || !offlineQueue.length) {
+      // Nothing to do when offline of no panding tasks.
       return;
     }
     const p = [];
-    for (let i = this._offlineQueue.length - 1; i >= 0; i--) {
-      const body = this._offlineQueue[i];
-      this._offlineQueue.splice(i, 1);
+    for (let i = offlineQueue.length - 1; i >= 0; i--) {
+      const body = offlineQueue[i];
+      offlineQueue.splice(i, 1);
       p[p.length] = this._transport(body);
     }
-    return Promise.all(p)
-    .catch((cause) => {
+    return Promise.all(p).catch((cause) => {
       console.warn(cause);
     });
   }
@@ -1256,6 +1452,15 @@ class AppAnalytics extends PolymerElement {
     msg += 'https://github.com/advanced-rest-client/app-analytics/issues';
     console.info(msg, e);
     console.trace();
+  }
+  /**
+   * MutationObserver initialized in the constructor does not
+   * triggers changes when the element is initialized. This
+   * function processes nodes set up declaratively when the element is still
+   * initializing.
+   */
+  _processInitialNodes() {
+    this._processAddedNodes(this.children);
   }
 }
 window.customElements.define('app-analytics', AppAnalytics);
