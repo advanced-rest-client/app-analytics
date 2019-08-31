@@ -336,3 +336,13 @@
 
 
 
+## [3.0.1](https://github.com/advanced-rest-client/app-analytics/compare/1.0.15...3.0.1) (2019-08-31)
+
+
+### Bug Fixes
+
+* fixing _baseParams type ([8c0e131](https://github.com/advanced-rest-client/app-analytics/commit/8c0e131))
+* removing Polymer as a dependency ([1e79488](https://github.com/advanced-rest-client/app-analytics/commit/1e79488))
+
+
+
