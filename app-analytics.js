@@ -1224,8 +1224,10 @@ class AppAnalytics extends HTMLElement {
     const post = Object.assign({}, this._baseParams, params);
     const body = this._createBody(post);
     if (this.debug) {
+      /* eslint-disable-next-line */
       console.group('Running command for ', type);
       this._printParamsTable(post);
+      /* eslint-disable-next-line */
       console.groupEnd();
     }
     return this._transport(body);
@@ -1264,10 +1266,12 @@ class AppAnalytics extends HTMLElement {
         try {
           this.sendTimings(d.category, d.variable, d.value, d.label, opts);
         } catch (e) {
+          /* eslint-disable-next-line */
           console.warn(e);
         }
         break;
       default:
+        /* eslint-disable-next-line */
         console.warn('Unknown type [' + d.type + ']');
         break;
     }
@@ -1364,6 +1368,7 @@ class AppAnalytics extends HTMLElement {
       });
     }
     if (this.debug) {
+      /* eslint-disable-next-line */
       console.info('[GA] Configuring base object', data);
     }
     this._baseParams = data;
@@ -1385,6 +1390,7 @@ class AppAnalytics extends HTMLElement {
         name: name
       });
     });
+    /* eslint-disable-next-line */
     console.table(map, ['name', 'value']);
     this.dispatchEvent(new CustomEvent('app-analytics-hit-debug', {
       detail: {
@@ -1459,6 +1465,7 @@ class AppAnalytics extends HTMLElement {
       p[p.length] = this._transport(body);
     }
     return Promise.all(p).catch((cause) => {
+      /* eslint-disable-next-line */
       console.warn(cause);
     });
   }
@@ -1467,7 +1474,9 @@ class AppAnalytics extends HTMLElement {
     let msg = 'The <app-analytics> element encountered a problem. ';
     msg += 'Please, repor an isse at ';
     msg += 'https://github.com/advanced-rest-client/app-analytics/issues';
+    /* eslint-disable-next-line */
     console.info(msg, e);
+    /* eslint-disable-next-line */
     console.trace();
   }
   /**

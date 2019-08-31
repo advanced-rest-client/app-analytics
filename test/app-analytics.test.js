@@ -1,6 +1,5 @@
 import { fixture, assert, aTimeout } from '@open-wc/testing';
-import sinon from 'sinon/pkg/sinon-esm.js';
-import { a11ySuite } from '@advanced-rest-client/a11y-suite/index.js';
+import * as sinon from 'sinon/pkg/sinon-esm.js';
 import '../app-analytics.js';
 import '../app-analytics-custom.js';
 
@@ -1577,52 +1576,52 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
 
       it(`Body have the ${params[2].n} parameter`, function() {
-        let index = body.indexOf(params[2].n + '=');
+        const index = body.indexOf(params[2].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[2].n} value is ${params[2].v}`, function() {
-        let value = findValue(body, body.indexOf(params[2].n + '='));
+        const value = findValue(body, body.indexOf(params[2].n + '='));
         assert.equal(value, params[2].v);
       });
 
       it(`Body have the ${params[3].n} parameter`, function() {
-        let index = body.indexOf(params[3].n + '=');
+        const index = body.indexOf(params[3].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[3].n} value is ${params[3].v}`, function() {
-        let value = findValue(body, body.indexOf(params[3].n + '='));
+        const value = findValue(body, body.indexOf(params[3].n + '='));
         assert.equal(value, params[3].v);
       });
 
       it(`Body have the ${params[4].n} parameter`, function() {
-        let index = body.indexOf(params[4].n + '=');
+        const index = body.indexOf(params[4].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[4].n} value is ${params[4].v}`, function() {
-        let value = findValue(body, body.indexOf(params[4].n + '='));
+        const value = findValue(body, body.indexOf(params[4].n + '='));
         assert.equal(value, params[4].v);
       });
     });
@@ -1649,42 +1648,42 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
 
       it(`Body have the ${params[2].n} parameter`, function() {
-        let index = body.indexOf(params[2].n + '=');
+        const index = body.indexOf(params[2].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[2].n} value is ${params[2].v}`, function() {
-        let value = findValue(body, body.indexOf(params[2].n + '='));
+        const value = findValue(body, body.indexOf(params[2].n + '='));
         assert.equal(value, params[2].v);
       });
 
       it(`Body have the ${params[3].n} parameter`, function() {
-        let index = body.indexOf(params[3].n + '=');
+        const index = body.indexOf(params[3].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[3].n} value is ${params[3].v}`, function() {
-        let value = findValue(body, body.indexOf(params[3].n + '='));
+        const value = findValue(body, body.indexOf(params[3].n + '='));
         assert.equal(value, params[3].v);
       });
     });
@@ -1711,42 +1710,42 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
 
       it(`Body have the ${params[2].n} parameter`, function() {
-        let index = body.indexOf(params[2].n + '=');
+        const index = body.indexOf(params[2].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[2].n} value is ${params[2].v}`, function() {
-        let value = findValue(body, body.indexOf(params[2].n + '='));
+        const value = findValue(body, body.indexOf(params[2].n + '='));
         assert.equal(value, params[2].v);
       });
 
       it(`Body have the ${params[3].n} parameter`, function() {
-        let index = body.indexOf(params[3].n + '=');
+        const index = body.indexOf(params[3].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[3].n} value is ${params[3].v}`, function() {
-        let value = findValue(body, body.indexOf(params[3].n + '='));
+        const value = findValue(body, body.indexOf(params[3].n + '='));
         assert.equal(value, params[3].v);
       });
     });
@@ -1767,22 +1766,22 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
     });
@@ -1812,42 +1811,42 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
 
       it(`Body have the ${params[2].n} parameter`, function() {
-        let index = body.indexOf(params[2].n + '=');
+        const index = body.indexOf(params[2].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[2].n} value is ${params[2].v}`, function() {
-        let value = findValue(body, body.indexOf(params[2].n + '='));
+        const value = findValue(body, body.indexOf(params[2].n + '='));
         assert.equal(value, params[2].v);
       });
 
       it(`Body have the ${params[3].n} parameter`, function() {
-        let index = body.indexOf(params[3].n + '=');
+        const index = body.indexOf(params[3].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[3].n} value is ${params[3].v}`, function() {
-        let value = findValue(body, body.indexOf(params[3].n + '='));
+        const value = findValue(body, body.indexOf(params[3].n + '='));
         assert.equal(value, params[3].v);
       });
     });
@@ -1868,22 +1867,22 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
     });
@@ -1907,32 +1906,32 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
 
       it(`Body have the ${params[2].n} parameter`, function() {
-        let index = body.indexOf(params[2].n + '=');
+        const index = body.indexOf(params[2].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[2].n} value is ${params[2].v}`, function() {
-        let value = findValue(body, body.indexOf(params[2].n + '='));
+        const value = findValue(body, body.indexOf(params[2].n + '='));
         assert.equal(value, params[2].v);
       });
     });
@@ -1959,42 +1958,42 @@ describe('<app-analytics>', function() {
       });
 
       it(`Body have the ${params[0].n} parameter`, function() {
-        let index = body.indexOf(params[0].n + '=');
+        const index = body.indexOf(params[0].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[0].n} value is ${params[0].v}`, function() {
-        let value = findValue(body, body.indexOf(params[0].n + '='));
+        const value = findValue(body, body.indexOf(params[0].n + '='));
         assert.equal(value, params[0].v);
       });
 
       it(`Body have the ${params[1].n} parameter`, function() {
-        let index = body.indexOf(params[1].n + '=');
+        const index = body.indexOf(params[1].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[1].n} value is ${params[1].v}`, function() {
-        let value = findValue(body, body.indexOf(params[1].n + '='));
+        const value = findValue(body, body.indexOf(params[1].n + '='));
         assert.equal(value, params[1].v);
       });
 
       it(`Body have the ${params[2].n} parameter`, function() {
-        let index = body.indexOf(params[2].n + '=');
+        const index = body.indexOf(params[2].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[2].n} value is ${params[2].v}`, function() {
-        let value = findValue(body, body.indexOf(params[2].n + '='));
+        const value = findValue(body, body.indexOf(params[2].n + '='));
         assert.equal(value, params[2].v);
       });
 
       it(`Body have the ${params[3].n} parameter`, function() {
-        let index = body.indexOf(params[3].n + '=');
+        const index = body.indexOf(params[3].n + '=');
         assert.isAtLeast(index, 0);
       });
 
       it(`${params[3].n} value is ${params[3].v}`, function() {
-        let value = findValue(body, body.indexOf(params[3].n + '='));
+        const value = findValue(body, body.indexOf(params[3].n + '='));
         assert.equal(value, params[3].v);
       });
     });
@@ -2014,15 +2013,21 @@ describe('<app-analytics>', function() {
       assert.equal(node.getAttribute('aria-hidden'), 'true');
     });
 
-    a11ySuite('Normal state', `<app-analytics
-      trackingid="UA-71458341-4"
-      appname="app-analytics-test"
-      appversion="dev"
-      datasource="app-analytics element"></app-analytics>`);
+    it('is accessible in regular state', async () => {
+      const element = await fixture(`<app-analytics
+        trackingid="UA-71458341-4"
+        appname="app-analytics-test"
+        appversion="dev"
+        datasource="app-analytics element"></app-analytics>`);
+      await assert.isAccessible(element);
+    });
 
-    a11ySuite('With children', `<app-analytics>
-      <app-analytics-custom type="dimension" index="3" value="test-value-3"></app-analytics-custom>
-      <app-analytics-custom type="dimension" index="4" value="test-value-4"></app-analytics-custom>
-      </app-analytics>`);
+    it('is accessible with children', async () => {
+      const element = await fixture(`<app-analytics>
+        <app-analytics-custom type="dimension" index="3" value="test-value-3"></app-analytics-custom>
+        <app-analytics-custom type="dimension" index="4" value="test-value-4"></app-analytics-custom>
+        </app-analytics>`);
+      await assert.isAccessible(element);
+    });
   });
 });
