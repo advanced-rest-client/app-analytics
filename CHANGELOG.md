@@ -346,3 +346,91 @@
 
 
 
+<a name="3.0.1"></a>
+## [3.0.1](https://github.com/advanced-rest-client/app-analytics/compare/3.0.0...3.0.1) (2020-01-07)
+
+### Build
+
+* bumping version to stable [a9b2195](https://github.com/advanced-rest-client/app-analytics/commit/a9b2195e2b1a6088e2d7f9172e868c856c14afe4) by Pawel
+
+
+### Update
+
+* upgrading component to fix linter errors [858f882](https://github.com/advanced-rest-client/app-analytics/commit/858f882ad491d047e2fbe1a6408ec9866c6eb2fe) by Pawel
+* dropping support for Polymer library [d58440a](https://github.com/advanced-rest-client/app-analytics/commit/d58440a979a8a0daf6dbef1bb743e08b9dea7b27) by Pawel Psztyc
+
+
+### Documentation
+
+* updating docs [f169c7d](https://github.com/advanced-rest-client/app-analytics/commit/f169c7d53b234ac798ce3427763f11c1c4607fe9) by Pawel
+* updating typpings [40911ae](https://github.com/advanced-rest-client/app-analytics/commit/40911ae1df69c32a3124e5abc2cd7f74f043fc2b) by Pawel
+
+
+### Bug Fixes
+
+* removing Polymer as a dependency [1e79488](https://github.com/advanced-rest-client/app-analytics/commit/1e79488ad5f026ee97a40b14cddc390a4fe52dcd) by Pawel
+* fixing _baseParams type [8c0e131](https://github.com/advanced-rest-client/app-analytics/commit/8c0e131f0264a78bc51cf110909ed58c5a644e45) by Pawel
+
+
+### Testing
+
+* fixing tests for edge [35b8958](https://github.com/advanced-rest-client/app-analytics/commit/35b8958642980a70ec17316d8b88f970c47dc9b1) by Pawel
+* finishing test for new version [5210d39](https://github.com/advanced-rest-client/app-analytics/commit/5210d394409d17f981e0e4784653481a4d6237bf) by Pawel
+
+
+### Other
+
+* Update: Updating import paths to match web spec
+ [e19246b](https://github.com/advanced-rest-client/app-analytics/commit/e19246bc8609ecd07ae5b451fe8c27106ca03c7c) by Pawel Psztyc
+* Docs: Updating readme
+ [d890e57](https://github.com/advanced-rest-client/app-analytics/commit/d890e574dad41255a12486c073e8bb3068aac0f5) by Pawel Psztyc
+* Update: Adding type check for local storage for chrome apps
+ [809e22a](https://github.com/advanced-rest-client/app-analytics/commit/809e22ac9753e606d2dbd0867bc6ab9982f05766) by Pawel Psztyc
+* Fix: Fixing configuration when disabled/cid changes
+ [5b2d6e5](https://github.com/advanced-rest-client/app-analytics/commit/5b2d6e58b833d62e99f7347dad125a937fdc2d2b) by Pawel Psztyc
+* Update: Adding type check for localStorage
+ [040004f](https://github.com/advanced-rest-client/app-analytics/commit/040004f363f0374aa05893e8590db610ed6edb00) by Pawel Psztyc
+* Breaking: Upgrading to Polymer 3
+ [b34675e](https://github.com/advanced-rest-client/app-analytics/commit/b34675e4fc4f9cbbef0d10e512928b4b3f8c0e76) by Pawel Psztyc
+* Update: Removed support for disabling GA. Remove element from the DOM instead.
+ [d6d04a5](https://github.com/advanced-rest-client/app-analytics/commit/d6d04a56d63495b3b724f53eb355ccab7ccd46ef) by Pawel Psztyc
+* Fix: Fixed tests
+ [2a67ff6](https://github.com/advanced-rest-client/app-analytics/commit/2a67ff6c6940bfecd923088c11a7b86124c47b33) by Pawel Psztyc
+* Update: Added safari 10 to testd browsers
+ [f59dc67](https://github.com/advanced-rest-client/app-analytics/commit/f59dc67afa6980e67336023b4240c7690d8b73d9) by Pawel Psztyc
+* New: Added new tests. Updated old tests
+ [8a9828e](https://github.com/advanced-rest-client/app-analytics/commit/8a9828e9fc612c14ae221b511df827fcb4d1410f) by Pawel Psztyc
+* Fix: Many small bug fixes.
+ [5c5acbb](https://github.com/advanced-rest-client/app-analytics/commit/5c5acbb93dda7efcd21845f02ea2f300941e5dac) by Pawel Psztyc
+* Update: disabled ES6 comability mode
+ [3597d50](https://github.com/advanced-rest-client/app-analytics/commit/3597d506ef1f68cf7a7dbe2c18769572e00d239f) by jarrodek
+* Update: Removed gulp tasks
+ [c3cb02e](https://github.com/advanced-rest-client/app-analytics/commit/c3cb02e9f56f621e5ea5ae935f2d7c2b48b95080) by jarrodek
+* Update: testing disableTracking property
+ [9c48b98](https://github.com/advanced-rest-client/app-analytics/commit/9c48b98e521ddd7aff7fd7d0d7fa00decd691359) by jarrodek
+* Update: Changed method how the element initialize variables
+ [824ba1c](https://github.com/advanced-rest-client/app-analytics/commit/824ba1c9305c6a030ff820332c100d322e2eb7d6) by jarrodek
+* Fix: Fixed issue #1. Also refactored code to not use ES6 function. Added polyfil to find index function
+ [a1980f6](https://github.com/advanced-rest-client/app-analytics/commit/a1980f6378f14f657d3a0e871862b2d4e56650c9) by Paweł Psztyć
+* Update: Added content type header for the request
+ [ce6ba42](https://github.com/advanced-rest-client/app-analytics/commit/ce6ba42bf0ff1aadf6e3c74d029fe981cdf1fc06) by Paweł Psztyć
+* Docs: updated demo page
+ [56d6ae4](https://github.com/advanced-rest-client/app-analytics/commit/56d6ae41785bd8f54c18ce6fe231976a53e25b9f) by Paweł Psztyć
+* Fix: Added type checking when trying to access properties in strict mode
+ [a76e0de](https://github.com/advanced-rest-client/app-analytics/commit/a76e0dec0bbfe91a623df7183d37653874e7b8a5) by jarrodek
+* Fix: Fixing parameters assignment
+ [913813f](https://github.com/advanced-rest-client/app-analytics/commit/913813f0db4107ab9b79a95d2797e0a94d5d8563) by jarrodek
+* Update: Removed dependency to chrome platform analytics. Updated docs
+ [69a8a68](https://github.com/advanced-rest-client/app-analytics/commit/69a8a6844a976160c4626b2764ebc283a9d1ce6e) by jarrodek
+* Docs: Updated docs for new API
+ [2f7275b](https://github.com/advanced-rest-client/app-analytics/commit/2f7275b1b25fd0de47bb59978b023ed2f890bfa9) by jarrodek
+* New: Added custom metrics / dimensions to the event details
+ [12798f3](https://github.com/advanced-rest-client/app-analytics/commit/12798f3e2f33a016eb52ca52b4564fb89c608970) by jarrodek
+* Update: Added hero image
+ [c995869](https://github.com/advanced-rest-client/app-analytics/commit/c995869fef9cb907ba3c7625d953f77c4528a834) by jarrodek
+* Docs: Updated docs
+ [174972d](https://github.com/advanced-rest-client/app-analytics/commit/174972dc1ba44ea5a63bc33cac7541ee9937a375) by jarrodek
+* Fix: Fixed issues with database initialization. Now analytics works properly. Added offline support. Added ability to disable analytics
+ [9ae3b8a](https://github.com/advanced-rest-client/app-analytics/commit/9ae3b8a4cc248c4ae450b67579a21b8c65268443) by jarrodek
+
+
